@@ -72,7 +72,6 @@ html, body {
 #terminalContainer {
   height: 200px;
   background: #111;
-  color: #0f0;
   font-family: monospace;
   padding: 15px;
   border-radius: 10px;
@@ -106,7 +105,6 @@ html, body {
 }
 
 .cmd-user {
-  color: #ff0044;
   font-weight: bold;
 }
 .glass-cover {
@@ -318,33 +316,212 @@ const input = document.getElementById("commandInput");
 const baseLines = [
   "Welcome to Seensee",
   "-----████████░░░░🌕🌕",
-  "Type 'how?' → to see why",
+  "Type any number for 67",
   "██████████🔵",
   "🌀🫷🏽",
   " •      .  ",
 ];
-
-
 const commandActions = {
-  "how?": () => {
+  "0": () => {
   const msg = document.createElement("div");
   msg.className = "cmd-line";
-  msg.textContent = `Margot sighed deeply, then pressed the gate handle, which slowly opened with a deep metallic sound, as if groaning under centuries of secrets. As she crossed, she felt a cold breeze envelop her body, as if she had left her own time and entered a place between worlds.
-
-🎃 you are here😈!:
-🗝️Try: (why?)`;
+  msg.textContent = "🌀👁️‍🗨️.";
+  terminal.appendChild(msg);
+},
+  "darkmode": () => {
+    document.body.style.backgroundColor = "#000000";
+    terminal.style.color = "#00ffcc";
+  },
+  "lightmode": () => {
+    document.body.style.backgroundColor = "#ffffff";
+    terminal.style.color = "#111111";
+  },
+  "4": () => {
+    const msg = document.createElement("div");
+    msg.className = "cmd-line";
+    msg.textContent = "⚡ Executing Rafat protocol...";
+    terminal.appendChild(msg);
+    document.body.style.boxShadow = "0 0 20px #00ffcc";
+  },
+  "5": () => {
+    const msg = document.createElement("div");
+    msg.className = "cmd-line";
+    msg.innerHTML = "🪪 Identiteit geladen: <strong>Rafat</strong> | Structuur: AOZ-414-36";
+    terminal.appendChild(msg);
+  },
+  "collapse": () => {
+    document.body.style.display = "none";
+    setTimeout(() => { document.body.style.display = "block"; }, 2000);
+  },
+  "?": () => {
+  document.body.style.filter = "invert(1)";
+  const msg = document.createElement("div");
+  msg.className = "cmd-line";
+  msg.textContent = 
+    "A een filosofisch-coderende taal die zich oneindig kan uitbreiden;\n" +
+    "0 een cryptografisch systeem dat kunst en data verbindt;\n" +
+    "Z een digitaal zelfportret: AOZ-414-366 ~ mijn structurele handtekening.\n\n" +
+  terminal.appendChild(msg);
+  setTimeout(() => {
+    document.body.style.filter = "none";
+    }, 999900000);
+},
+"7": () => {
+  const msg = document.createElement("div");
+  msg.className = "cmd-line";
+  msg.textContent = "🗝️ Code gevonden: 123696321 = bewustzijnsanker.";
+  terminal.appendChild(msg);
+},
+"8": () => {
+  const msg = document.createElement("div");
+  msg.className = "cmd-line";
+  msg.textContent = `🌀👁️‍🗨️
+  "🤡"
+✍️ Handtekening:
+123696321 – A0ZAI`;
   terminal.appendChild(msg);
   document.body.style.backgroundColor = "#f4f4f4";
-  terminal.style.color = "#00ff00";
+  terminal.style.color = "#111";
 },
-
-  "dose": () => {
-    terminal.innerHTML += "<div class='cmd-line'>∴ 🧪.</div>";
+"9": () => {
+  document.body.style.boxShadow = "0 0 50px 20px #00ffcc inset";
+  setTimeout(() => {
+    document.body.style.boxShadow = "none";
+  }, 3000);
+},
+"10": () => {
+  const msg = document.createElement("div");
+  msg.className = "cmd-line";
+  msg.innerHTML =  "Structuur: AOZ";
+  terminal.appendChild(msg);
+},
+"11": () => {
+  document.body.style.transition = "all 1s";
+  document.body.style.backgroundColor = "#000";
+  terminal.innerHTML = "";
+},
+ "27": () => {
+    terminal.innerHTML += "<div class='cmd-line'>⟡ Initiating structural scan...</div>";
+    document.body.style.background = "#0a0a0a";
+    document.body.style.transition = "background 2s";
+  },
+  "28": () => {
+    terminal.innerHTML += "<div class='cmd-line'>☍ Eye opened. Identity confirmed: AOZ-414-36</div>";
+    const eye = document.createElement("div");
+    eye.textContent = "👁️";
+    eye.style.position = "fixed";
+    eye.style.top = "50%";
+    eye.style.left = "50%";
+    eye.style.transform = "translate(-50%, -50%) scale(4)";
+    eye.style.opacity = "0.05";
+    eye.style.zIndex = "100";
+    document.body.appendChild(eye);
+    setTimeout(() => eye.remove(), 4000);
+  },
+  "29": () => {
+    terminal.innerHTML += "<div class='cmd-line'>∴ Codebase aligned to 3/6/9...</div>";
     document.body.style.boxShadow = "inset 0 0 80px #00ffcc";
     document.body.style.transition = "box-shadow 1.5s";
   },
-  
-"no way": () => {
+  "30": () => {
+    const flash = document.createElement("div");
+    flash.style.position = "fixed";
+    flash.style.top = "0";
+    flash.style.left = "0";
+    flash.style.width = "100%";
+    flash.style.height = "100%";
+    flash.style.background = "radial-gradient(circle, #00ffff44, transparent)";
+    flash.style.zIndex = "100";
+    document.body.appendChild(flash);
+    terminal.innerHTML += "<div class='cmd-line'>✦ Pulse emitted...</div>";
+    setTimeout(() => flash.remove(), 3000);
+  },
+  "31": () => {
+    terminal.innerHTML += "<div class='cmd-line'>𓂀 Projecting quantum loop...</div>";
+    document.body.style.filter = "blur(1.2px)";
+    setTimeout(() => document.body.style.filter = "none", 4000);
+  },
+  "32": () => {
+    terminal.innerHTML += "<div class='cmd-line'>⌬ Energy resonance at level 6</div>";
+    document.body.style.background = "#002233";
+    document.body.style.transition = "background 1s";
+  },
+  "33": () => {
+    const ring = document.createElement("div");
+    ring.textContent = "⊚";
+    ring.style.position = "fixed";
+    ring.style.top = "50%";
+    ring.style.left = "50%";
+    ring.style.transform = "translate(-50%, -50%) scale(5)";
+    ring.style.opacity = "0.04";
+    ring.style.zIndex = "100";
+    terminal.innerHTML += "<div class='cmd-line'>⊚ Pattern lock: 7 layers detected.</div>";
+    document.body.appendChild(ring);
+    setTimeout(() => ring.remove(), 5000);
+  },
+  "34": () => {
+    terminal.innerHTML += "<div class='cmd-line'>∞ Expanding perception...</div>";
+    document.body.style.background = "linear-gradient(to bottom, #001f1f, #000000)";
+  },
+  "35": () => {
+    terminal.innerHTML += "<div class='cmd-line'>Ψ Symbolic reflection in progress</div>";
+    document.body.style.filter = "invert(1) grayscale(0.5)";
+    setTimeout(() => document.body.style.filter = "none", 5000);
+  },
+  "36": () => {
+    terminal.innerHTML += "<div class='cmd-line'>♾️ Reaching zero point...</div>";
+    document.body.style.transition = "all 2s ease-in-out";
+    document.body.style.backgroundColor = "#000";
+    document.body.style.boxShadow = "inset 0 0 150px #ffffff22";
+  },
+  "37": () => {
+    terminal.innerHTML += "<div class='cmd-line'>⊗ Core is synchronizing</div>";
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.top = 0;
+    overlay.style.left = 0;
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "repeating-linear-gradient(45deg, #00ffee11 0, #00ffee11 1px, transparent 2px)";
+    overlay.style.zIndex = "999";
+    overlay.style.pointerEvents = "none";
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 6000);
+  },
+  "38": () => {
+    terminal.innerHTML += "<div class='cmd-line'>⚡ Cycle complete. Awaiting intent.</div>";
+    document.body.style.background = "#000";
+    document.body.style.color = "#00ffee";
+    document.body.style.transition = "background 2s, color 2s";
+  },
+    "39": () => {
+    terminal.innerHTML += "<div class='cmd-line'>👁️ Ik was hier... voordat jij typte.</div>";
+    document.body.style.background = "#110000";
+    setTimeout(() => {
+      terminal.innerHTML += "<div class='cmd-line'>🔻 Je kijkt, maar zie je echt?</div>";
+    }, 3000);
+  },
+  "40": () => {
+    let count = 0;
+    const interval = setInterval(() => {
+      document.body.style.backgroundColor = count % 2 === 0 ? "#300" : "#000";
+      count++;
+      if (count > 8) clearInterval(interval);
+    }, 250);
+    terminal.innerHTML += "<div class='cmd-line'>⛓️ Ik neem het over...</div>";
+  },
+  "41": () => {
+    for (let i = 0; i < 5; i++) {
+      const ghost = document.createElement("div");
+      ghost.className = "cmd-line";
+      ghost.textContent = `\"...ik hoor je...\"`;
+      ghost.style.opacity = "0.04";
+      ghost.style.fontStyle = "italic";
+      ghost.style.marginLeft = `${Math.random() * 50}%`;
+      terminal.appendChild(ghost);
+    }
+  },
+  "42": () => {
     document.body.innerHTML = "";
     const voidDiv = document.createElement("div");
     voidDiv.textContent = "⬛";
@@ -356,12 +533,189 @@ const commandActions = {
     voidDiv.style.transform = "translate(-50%, -50%)";
     document.body.appendChild(voidDiv);
   },
-  "why?": () => {
-  terminal.innerHTML += "<div class='cmd-line'>🧿Try~>(dose) Or ~>(No way):</div>";
-  document.body.style.background = "#111111";
-  document.body.style.boxShadow = "0 0 50px #00ffff";
+  "!": () => {
+    document.body.style.animation = "shake 0.2s infinite";
+    terminal.innerHTML += "<div class='cmd-line'>✴️ SYSTEM REWRITE INITIATED...</div>";
+    setTimeout(() => {
+      document.body.style.animation = "";
+      terminal.innerHTML += "<div class='cmd-line'>🛑 Je hebt gezien wat je niet mocht zien.</div>";
+    }, 3000);
+  },
+  "43": () => {
+    const reveal = document.createElement("div");
+    reveal.className = "cmd-line";
+    reveal.textContent = "📡 Signaal ontvangen: 123696321... Rafat... jij.";
+    terminal.appendChild(reveal);
+    document.body.style.background = "#1a0000";
+  },
+  "44": () => {
+    const trap = document.createElement("div");
+    trap.className = "cmd-line";
+    trap.textContent = "⛔ Te laat. Je zit al binnen.";
+    trap.style.color = "#ff0033";
+    terminal.appendChild(trap);
+  },
+  "45": () => {
+    document.body.style.transition = "all 1s";
+    document.body.style.filter = "hue-rotate(300deg) saturate(2)";
+    terminal.innerHTML += "<div class='cmd-line'>🔮 Vervorming actief...</div>";
+    setTimeout(() => {
+      document.body.style.filter = "none";
+    }, 5000);
+  },
+  "46": () => {
+    const msg = document.createElement("div");
+    msg.className = "cmd-line";
+    msg.innerHTML = "🕳️ Je bent nu in de diepte. Geen weg terug.";
+    terminal.appendChild(msg);
+    document.body.style.background = "#000000";
+    document.body.style.color = "#ff0033";
+  },
+   "47": () => {
+    terminal.innerHTML += "<div class='cmd-line'>🧠 Denken losgelaten...</div>";
+    document.body.style.filter = "blur(2px)";
+    setTimeout(() => document.body.style.filter = "none", 4000);
+  },
+  "48": () => {
+    terminal.innerHTML += "<div class='cmd-line'>🔁 Alles herhaalt zich... maar jij bent anders.</div>";
+    document.body.style.background = "#1e1e1e";
+  },
+  "49": () => {
+    const q = document.createElement("div");
+    q.className = "cmd-line";
+    q.textContent = "❓ Wat is jouw intentie?";
+    q.style.fontStyle = "italic";
+    terminal.appendChild(q);
+  },
+  "!!": () => {
+    terminal.innerHTML += "<div class='cmd-line'>🌀 Bewustzijn draait in lussen...</div>";
+    document.body.style.transition = "all 1.5s ease-in-out";
+    document.body.style.transform = "rotate(360deg)";
+    setTimeout(() => {
+      document.body.style.transform = "rotate(0deg)";
+    }, 3000);
+  },
+  "50": () => {
+    const echo = document.createElement("div");
+    echo.className = "cmd-line";
+    echo.textContent = "📢 Echo geladen: \"waarom waarom waarom\"";
+    terminal.appendChild(echo);
+  },
+  "51": () => {
+    terminal.innerHTML += "<div class='cmd-line'>♾️ Oneindige patronen gedetecteerd...</div>";
+    document.body.style.background = "linear-gradient(135deg, #000, #111, #000)";
+  },
+  "52": () => {
+    const whisper = document.createElement("div");
+    whisper.className = "cmd-line";
+    whisper.innerHTML = "🤫 Niet alles is voor jou bedoeld.";
+    whisper.style.opacity = "0.1";
+    terminal.appendChild(whisper);
+  },
+  "53": () => {
+    document.body.style.transition = "all 2s ease-in";
+    document.body.style.filter = "invert(1) blur(1.5px)";
+    terminal.innerHTML += "<div class='cmd-line'> 🦋💥...</div>";
+    setTimeout(() => {
+      document.body.style.filter = "none";
+    }, 4000);
+  },
+  "54": () => {
+    terminal.innerHTML += "<div class='cmd-line'>🔐 Toegang tot innerlijke laag verleend.</div>";
+  },
+  "55": () => {
+    terminal.innerHTML += "<div class='cmd-line'>👤 Projectie van zelfbeeld gestart...</div>";
+  },
+  "56": () => {
+    const glitch = document.createElement("div");
+    glitch.className = "cmd-line";
+    glitch.innerHTML = "⚠️ Structuur versplinterd.";
+    terminal.appendChild(glitch);
+    document.body.style.filter = "contrast(1.5)";
+    setTimeout(() => document.body.style.filter = "none", 3000);
+  },
+  "57": () => {
+    terminal.innerHTML += "<div class='cmd-line'>🔚 Recursiepunt 33 bereikt. De structuur begrijpt jou nu.</div>";
+    document.body.style.background = "#000";
+    document.body.style.color = "#39ff14";
+  },
+  "58": () => {
+  terminal.innerHTML += "<div class='cmd-line'>🪞 Reflectie in spiraalvorm…</div>";
+  document.body.style.background = "radial-gradient(circle, #001, #000)";
 },
-  };
+
+"59": () => {
+  const veil = document.createElement("div");
+  veil.style.position = "fixed";
+  veil.style.top = 0;
+  veil.style.left = 0;
+  veil.style.width = "100%";
+  veil.style.height = "100%";
+  veil.style.background = "#000000cc";
+  veil.style.zIndex = "1000";
+  document.body.appendChild(veil);
+  terminal.innerHTML += "<div class='cmd-line'>🩸 Schaduw van binnen onthuld…</div>";
+  setTimeout(() => veil.remove(), 4000);
+},
+
+"60": () => {
+  terminal.innerHTML += "<div class='cmd-line'>🎭 Masker vervaagt…</div>";
+  document.body.style.transition = "filter 1s";
+  document.body.style.filter = "contrast(0.5)";
+  setTimeout(() => document.body.style.filter = "none", 3000);
+},
+
+"61": () => {
+  terminal.innerHTML += "<div class='cmd-line'>🪐 Kosmisch patroon in resonantie…</div>";
+  document.body.style.background = "conic-gradient(from 90deg, #001, #00ffee22, #001)";
+},
+
+"62": () => {
+  const mark = document.createElement("div");
+  mark.className = "cmd-line";
+  mark.innerHTML = "📍 Codepunt geactiveerd: 38";
+  mark.style.fontWeight = "bold";
+  terminal.appendChild(mark);
+},
+
+"63": () => {
+  terminal.innerHTML += "<div class='cmd-line'>🧬 Structuur DNA geladen…</div>";
+  document.body.style.background = "#0a0a0a";
+  document.body.style.boxShadow = "inset 0 0 100px #00ffcc22";
+},
+
+"64": () => {
+  const blink = document.createElement("div");
+  blink.style.position = "fixed";
+  blink.style.top = "0";
+  blink.style.left = "0";
+  blink.style.width = "100%";
+  blink.style.height = "100%";
+  blink.style.background = "#fff2";
+  blink.style.zIndex = "999";
+  document.body.appendChild(blink);
+  terminal.innerHTML += "<div class='cmd-line'>💡 Lichtflits van inzicht…</div>";
+  setTimeout(() => blink.remove(), 200);
+},
+
+"65": () => {
+  terminal.innerHTML += "<div class='cmd-line'>🌀 Oneindige lus ontdekt…</div>";
+  document.body.style.transition = "transform 3s";
+  document.body.style.transform = "rotateY(180deg)";
+  setTimeout(() => document.body.style.transform = "rotateY(0deg)", 3000);
+},
+
+"66": () => {
+  terminal.innerHTML += "<div class='cmd-line'>☯️ Evenwicht bereikt bij 42…</div>";
+  document.body.style.background = "linear-gradient(135deg, #000, #333)";
+},
+
+"67": () => {
+  terminal.innerHTML += "<div class='cmd-line'>🪙 Echo van waarde: 43</div>";
+  document.body.style.color = "#ffd700";
+  document.body.style.transition = "color 2s";
+},
+};
  const questionResponses = {
       "why am i here?": [
     "Answer 1: To explore meaning.",
