@@ -45,6 +45,17 @@ html, body {
     flex-direction: column;
     align-items: center;
 }
+/* Title */
+.title {
+    margin-bottom: 30px;
+    font-size: 36px;
+    letter-spacing: 12px;
+    color: #fff;
+    font-weight: 300;
+    text-shadow: 0 0 10px rgba(178,242,187,0.7),
+                 0 0 20px rgba(178,242,187,0.4);
+    transition: 3s ease;
+}
 /* Clock */
 .clock-container {
     position: relative;
@@ -59,50 +70,40 @@ html, body {
         inset 0 0 5px rgba(210, 170, 80, 0.2);
 }
 #terminalContainer {
-    position: fixed;
-    top: 500px; /* أسفل الساعة والشعار */
-    left: 0;
-    width: 100%;
-    height: calc(100% - 500px);
-    background: #111;
-    color: #0f0;
-    font-family: monospace;
-    padding: 15px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    z-index: 2;
-    border-radius: 0;
+  height: 200px;
+  padding: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
+
 #terminal {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 10px;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
 }
+
 .cmd-line {
-    margin: 10px 0;
-    animation: fadeIn 0.3s ease-in-out;
-    white-space: pre;
+  margin: 10px 0;
+  animation: fadeIn 0.3s ease-in-out;
+  white-space: pre;
 }
+
 .input-line {
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding: 10px 0;
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
 }
-.input-line input {
-    width: 90%;
-    background: none;
-    border: none;
-    color: #00fff0;
-    outline: none;
-    font-size: 16px;
-    text-align: center;
-}
+
 .cmd-user {
-    font-weight: bold;
+  font-weight: bold;
 }
 .glass-cover {
     position: absolute;
@@ -112,9 +113,9 @@ html, body {
     height: 100%;
     border-radius: 50%;
     background: rgba(255,255,255,0.08);
-    box-shadow: inset 0 20px 60px rgba(255,255,255,0.15),
+    box-shadow: inset 0 20px 60px rgba(255,255,255,0.15), 
                 0 0 40px rgba(255,255,255,0.1);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px); 
     pointer-events: none;
 }
 /* Hidden core text */
@@ -195,25 +196,26 @@ html, body {
     width: 6px;
     height: 100px;
     background: rgba(241,245,249,0.25);
-    box-shadow: 0 0 10px rgba(241,245,249,0.3);
+    box-shadow: 0 0 10px rgba(241,245,249,0.3); 
 }
 .minute {
     width: 4px;
     height: 140px;
     background: var(--sense-red);
-    box-shadow: 0 0 11px var(--sense-red);
+    box-shadow: 0 0 11px var(--sense-red); 
 }
 .second {
     width: 2px;
     height: 160px;
     background: var(--sense-blue);
     box-shadow: 0 0 12px var(--sense-blue);
-}
+}/* Tagline */
 .tagline {
     margin-top: 30px;
     color: #fff;
     opacity: 0.8;
 }
+/* Mobile */
 @media (max-width:600px){
     .clock-container { width:260px; height:260px; }
     .title { font-size:24px; letter-spacing:8px; }
@@ -223,13 +225,14 @@ body {
     opacity: 0;
     transition: opacity 3s ease-in;
 }
+
 body.loaded {
     opacity: 1;
 }
 </style>
 </head>
 <body>
-<div id="vanta-bg"></div>
+<div id="vanta-bg"></div> 
 <div id="particles-stars"></div>
 <div id="particles-movement"></div>
 <div class="main-content">
@@ -252,41 +255,34 @@ body.loaded {
         <div class="hand hour" id="hour"></div>
         <div class="hand minute" id="minute"></div>
         <div class="hand second" id="second"></div>
-    <div class="tagline">The instinct of Sensation</div>
-<div id="terminalContainer">
-        <div id="terminal"></div>
-        <div class="input-line">
-            <input type="text" id="commandInput" placeholder="🃏" autocomplete="off">
-        </div>
     </div>
+    <div class="tagline">The instinct of Sensation</div>
+      <div id="terminalContainer" style="width: 90%; max-width: 600px; background: #111; color: #0f0; font-family: monospace; padding: 15px; border-radius: 10px; margin-top: 30px; overflow-y: auto; height: 200px;">
+  <div id="terminal"></div>
+  <div class="input-line">
+      <div style="
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+  "> 
+  <input type="text" id="commandInput" placeholder="🃏" autocomplete="off" style="
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      text-align: center;
+      width: 100%;
+    ">
+  </div>
 </div>
 <script>
-const hamburger = document.getElementById('hamburger');
-const menu = document.getElementById('menu');
-const footer = document.getElementById('footer');
-const navLinks = menu.querySelectorAll('a');
-const modeToggle = document.getElementById('modeToggle');
-let isDark = false;
-modeToggle.addEventListener('click', () => {
-  if (!isDark) {
-    document.body.style.filter = "invert(1)";
-    isDark = true;
-  } else {
-    document.body.style.filter = "none";
-    isDark = false;
-  }
-});
-hamburger.addEventListener('click', () => {
-  menu.classList.toggle('active');
-  if(menu.classList.contains('active')) {
-    footer.style.backgroundColor = '#ffffff';  // أبيض عند فتح القائمة
-    footer.style.color = '#000000';
-  } else {
-    footer.style.backgroundColor = 'rgba(128, 0, 128, 0.5)';  // بنفسجي شفاف قبل النقر
-    footer.style.color = '#ffffff';
-  }
-  footer.scrollIntoView({ behavior: 'smooth' });
-});
 /* Smooth clock */
 function updateClock() {
     const now = new Date();
@@ -317,7 +313,7 @@ const input = document.getElementById("commandInput");
 const baseLines = [
   "Welcome to Seensee",
   "-----████████░░░░🌕🌕",
-  "Type any number from 27 to 67",
+  "Type any number for 67",
   "██████████🔵",
   "🌀🫷🏽",
   " •      .  ",
