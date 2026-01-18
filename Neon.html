@@ -37,13 +37,110 @@ html, body {
     z-index: 0;
     pointer-events: none;
 }
-/* Main content */
-.main-content {
-    position: relative;
-    z-index: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+header {
+  width: 100%;
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  padding: 30px 0;
+  position: relative;
+  z-index: 2;
+}
+.logo-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 20px;
+}
+
+.mode-toggle {
+  font-size: 28px;
+  cursor: pointer;
+}
+.logo {
+  font-size: 40px;
+  font-weight: bold;
+  color: red;
+  letter-spacing: 2px;
+  margin-bottom: 25px;
+}
+
+.logo .highlight {
+  color: blue;
+}
+
+.header-bottom {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  position: relative;
+}
+
+.left-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 120px;
+}
+
+
+
+/* زر القائمة */
+.hamburger {
+  cursor: pointer;
+  width: 30px;
+  height: 3px;
+  background-color: red;
+  position: absolute;
+  right: 20px;
+  transition: 0.3s;
+}
+
+.hamburger::before, 
+.hamburger::after { 
+  content: ''; 
+  position: absolute; 
+  width: 30px; 
+  height: 3px; 
+  background-color: red; 
+  transition: 0.3s; 
+}
+
+.hamburger::before { top: -10px; }
+.hamburger::after { top: 10px; }
+
+/* القائمة المنسدلة */
+nav { 
+  position: absolute; 
+  top: 50px; 
+  right: 20px; 
+  border: 1px solid #ccc; 
+  border-radius: 8px;
+  background-color: #ffffff;
+  display: none; 
+  flex-direction: column; 
+  min-width: 150px; 
+  box-shadow: 0 5px 10px rgba(0,0,0,0.1); 
+}
+
+nav a { 
+  padding: 10px 15px; 
+  text-decoration: none; 
+  color: #333; 
+  transition: 0.2s; 
+}
+
+nav a:hover { background-color: #ddd; }
+nav.active { display: flex; }
+
+/* المحتوى الرئيسي */
+main { 
+  padding: 20px;
+  z-index: 1;
 }
 /* Title */
 .title {
@@ -69,6 +166,7 @@ html, body {
         inset 0 0 18px rgba(0, 0, 0, 0.6),
         inset 0 0 5px rgba(210, 170, 80, 0.2);
 }
+/* Main content */
 #terminalContainer {
   height: 200px;
   background: #111;
@@ -106,6 +204,32 @@ html, body {
 
 .cmd-user {
   font-weight: bold;
+}
+footer {
+  width: 100%;
+  padding: 80px 20px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #1E90FF;
+  text-align: left;
+}
+
+.footer-links a {
+  color: #1E90FF;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.footer-links a:hover {
+  color: #00BFFF;
 }
 .glass-cover {
     position: absolute;
@@ -238,6 +362,28 @@ body.loaded {
 <div id="particles-stars"></div>
 <div id="particles-movement"></div>
 <div class="main-content">
+<header>
+<div class="logo-container">
+<span style="color: red;">(</span>
+<span style="color: blue;">)</span>
+</div>
+<div class="header-bottom">
+  <div class="left-controls">
+    <div class="mode-toggle" id="modeToggle">☂️</div>
+    <div class="hamburger" id="hamburger"></div>
+  </div>
+  <nav id="menu">
+    <a href="#home">Home</a>
+    <a href="#contact">Contact</a>
+    <a href="#over-ons">Over Ons</a>
+  </nav>
+</div>  <nav id="menu">
+    <a href="#home">Home</a>
+    <a href="#contact">Contact</a>
+    <a href="#over-ons">Over Ons</a>
+  </nav>
+</div>
+</header>
     <div class="clock-container">
         <div class="glass-cover"></div>
         <div class="brand-name">Seensee</div>
@@ -286,6 +432,32 @@ body.loaded {
   </div>
 </div>
 <script>
+const hamburger = document.getElementById('hamburger');
+const menu = document.getElementById('menu');
+const footer = document.getElementById('footer');
+const navLinks = menu.querySelectorAll('a');
+const modeToggle = document.getElementById('modeToggle');
+let isDark = false;
+modeToggle.addEventListener('click', () => {
+  if (!isDark) {
+    document.body.style.filter = "invert(1)";
+    isDark = true;
+  } else {
+    document.body.style.filter = "none";
+    isDark = false;
+  }
+});
+hamburger.addEventListener('click', () => {
+  menu.classList.toggle('active');
+  if(menu.classList.contains('active')) {
+    footer.style.backgroundColor = '#ffffff';  // أبيض عند فتح القائمة
+    footer.style.color = '#000000';
+  } else {
+    footer.style.backgroundColor = 'rgba(128, 0, 128, 0.5)';  // بنفسجي شفاف قبل النقر
+    footer.style.color = '#ffffff';
+  }
+  footer.scrollIntoView({ behavior: 'smooth' });
+});
 /* Smooth clock */
 function updateClock() {
     const now = new Date();
@@ -316,7 +488,7 @@ const input = document.getElementById("commandInput");
 const baseLines = [
   "Welcome to Seensee",
   "-----████████░░░░🌕🌕",
-  "Type any number for 67",
+  "Type any number from 27 to 67",
   "██████████🔵",
   "🌀🫷🏽",
   " •      .  ",
