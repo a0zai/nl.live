@@ -46,7 +46,7 @@ html, body {
     align-items: center;
 }
 .toggle-btn {
-    margin-top: 14px;
+    margin-top: 9px;
     padding: 10px 25px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--sense-green);
@@ -286,7 +286,7 @@ function resetIdle(){
     document.addEventListener(e, resetIdle)
 );
 resetIdle();
-const toggleBtn = document.getElementById('toggle-lang');
+const toggleBtn = document.getElementById('toggle-btn');
 let isArabic = false;
 
 const langData = {
@@ -297,16 +297,14 @@ const langData = {
 toggleBtn.addEventListener('click', () => {
     isArabic = !isArabic;
     const currentLang = isArabic ? langData.arabic : langData.latin;
-    const numbers = document.querySelectorAll('.number div');
+    const nums = document.querySelectorAll('.number div');
     
-    numbers.forEach((num, index) => {
-        // تأثير اختفاء وظهور سريع
+    nums.forEach((num, i) => {
         num.style.opacity = '0';
         setTimeout(() => {
-            num.innerText = currentLang[index];
+            num.innerText = currentLang[i];
             
-            // تطبيق عكس الرقم 6 في العربي فقط
-            if(isArabic && index === 6) {
+            if (i === 6) {
                 num.style.transform = "scaleX(-1)";
             } else {
                 num.style.transform = "scaleX(1)";
@@ -316,7 +314,7 @@ toggleBtn.addEventListener('click', () => {
         }, 200);
     });
 
-    toggleBtn.innerText = isArabic ? "Switch to Latin (123)" : "Switch to Arabic (١٢٣)";
+    toggleBtn.innerText = isArabic ? "SWITCH TO LATIN EDITION" : "SWITCH TO ARABIC EDITION";
 });
 
 </script>
