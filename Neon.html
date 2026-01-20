@@ -185,7 +185,7 @@ html, body {
     box-shadow: 0 0 12px var(--sense-blue);
 }/* Tagline */
 .tagline {
-    margin-top: 20px;      
+    margin-top: 27px;      
     color: #fff;            
     opacity: 0.85;         
     font-size: 14px;        
@@ -319,9 +319,8 @@ scene.addEventListener('mousemove', (e) => {
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-
-    targetY = (x - centerX) / centerX * 18; 
-    targetX = -(y - centerY) / centerY * 18; 
+    targetY = (x - centerX) / centerX * 15; 
+    targetX = -(y - centerY) / centerY * 16; 
 });
 
 scene.addEventListener('mouseleave', () => {
@@ -330,7 +329,7 @@ scene.addEventListener('mouseleave', () => {
 });
 
 function animate3D() {
-    currentX += (targetX - currentX) * 0.18;
+    currentX += (targetX - currentX) * 0.17;
     currentY += (targetY - currentY) * 0.18;
 
     clock.style.transform = `
@@ -358,8 +357,8 @@ scene.addEventListener('touchmove', e => {
     const dx = t.clientX - touchX;
     const dy = t.clientY - touchY;
 
-    targetY = dx * 0.15;
-    targetX = -dy * 0.15;
+    targetY = dx * 0.14;
+    targetX = -dy * 0.13;
 });
 </script>
 <script>
