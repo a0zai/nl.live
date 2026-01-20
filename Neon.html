@@ -45,6 +45,26 @@ html, body {
     flex-direction: column;
     align-items: center;
 }
+.toggle-btn {
+    margin-top: 20px;
+    padding: 10px 25px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--sense-green);
+    color: var(--sense-green);
+    font-family: inherit;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    transition: 0.3s;
+    letter-spacing: 2px;
+    z-index: 100;
+}
+
+.toggle-btn:hover {
+    background: var(--sense-green);
+    color: #000;
+    box-shadow: 0 0 20px var(--sense-green);
+}
+
 /* Title */
 .title {
     margin-bottom: 30px;
@@ -193,6 +213,7 @@ html, body {
     text-align: center;    
     width: 100%;        
 }
+
 /* Mobile */
 @media (max-width:600px){
     .clock-container { width:260px; height:260px; }
@@ -216,6 +237,7 @@ body.loaded {
 <div id="particles-stars"></div>
 <div id="particles-movement"></div>
 <div class="main-content">
+    <button id="toggle-lang" class="toggle-btn">Switch to Arabic (١٢٣)</button>
     <div class="scene">
     <div class="clock-container">
         <div class="glass-cover"></div>
@@ -264,6 +286,39 @@ function resetIdle(){
     document.addEventListener(e, resetIdle)
 );
 resetIdle();
+const toggleBtn = document.getElementById('toggle-lang');
+let isArabic = false;
+
+const langData = {
+    latin: [")(", "1", "2", "3", "4", "5", "Ɛ3", "7", "8", "9", "10", "11"],
+    arabic: [")(", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩", "١٠", "١١"]
+};
+
+toggleBtn.addEventListener('click', () => {
+    isArabic = !isArabic;
+    const currentLang = isArabic ? langData.arabic : langData.latin;
+    const numbers = document.querySelectorAll('.number div');
+    
+    numbers.forEach((num, index) => {
+        // تأثير اختفاء وظهور سريع
+        num.style.opacity = '0';
+        setTimeout(() => {
+            num.innerText = currentLang[index];
+            
+            // تطبيق عكس الرقم 6 في العربي فقط
+            if(isArabic && index === 6) {
+                num.style.transform = "scaleX(-1)";
+            } else {
+                num.style.transform = "scaleX(1)";
+            }
+            
+            num.style.opacity = '1';
+        }, 200);
+    });
+
+    toggleBtn.innerText = isArabic ? "Switch to Latin (123)" : "Switch to Arabic (١٢٣)";
+});
+
 </script>
 <script>
 VANTA.FOG({
@@ -319,8 +374,8 @@ scene.addEventListener('mousemove', (e) => {
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    targetY = (x - centerX) / centerX * 15; 
-    targetX = -(y - centerY) / centerY * 16; 
+    targetY = (x - centerX) / centerX * 8; 
+    targetX = -(y - centerY) / centerY * 9; 
 });
 
 scene.addEventListener('mouseleave', () => {
@@ -329,8 +384,8 @@ scene.addEventListener('mouseleave', () => {
 });
 
 function animate3D() {
-    currentX += (targetX - currentX) * 0.17;
-    currentY += (targetY - currentY) * 0.18;
+    currentX += (targetX - currentX) * 0.10;
+    currentY += (targetY - currentY) * 0.11;
 
     clock.style.transform = `
         rotateX(${currentX}deg)
@@ -392,5 +447,6 @@ btn.addEventListener('click', () => {
     }
 });
 </script>
+
 </body>
 </html>
