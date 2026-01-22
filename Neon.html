@@ -37,80 +37,48 @@ html, body {
     z-index: 0;
     pointer-events: none;
 }
-/* Main content */
 .main-content {
     position: relative;
-    z-index: 0;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-
-
-
-/* Title */
-.title {
-    margin-bottom: 30px;
-    font-size: 36px;
-    letter-spacing: 12px;
-    color: #fff;
-    font-weight: 300;
-    text-shadow: 0 0 10px rgba(178,242,187,0.7),
-                 0 0 20px rgba(178,242,187,0.4);
-    transition: 3s ease;
-}
 .scene {
     perspective: 1448px;
+    position: relative;
 }
-.energy-glow {
+.energy-cloud {
     position: absolute;
-    width: 460px;
-    height: 460px;
-    border-radius: 50%;
-    background:
-        radial-gradient(
-            circle,
-            rgba(178,242,187,0.55) 0%,
-            rgba(178,242,187,0.35) 35%,
-            rgba(178,242,187,0.15) 55%,
-            rgba(178,242,187,0.05) 65%,
-            transparent 70%
-        );
-    filter: blur(25px);
-    animation: energyPulse 6s ease-in-out infinite;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 550px;
+    height: 550px;
     z-index: -1;
+    background: radial-gradient(circle, rgba(178,242,187,0.4) 0%, transparent 70%);
+    filter: blur(20px);
 }
-.energy-ring {
-    --ring-scale: 1;
-    position: absolute;
-    width: 420px;
-    height: 420px;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    border: 2px solid rgba(178,242,187,0.75);
-    box-shadow:
-        0 0 18px rgba(178,242,187,0.95),
-        0 0 45px rgba(178,242,187,0.65),
-        0 0 90px rgba(178,242,187,0.35);
-    filter: blur(0.3px);
-    animation:
-        ringSpin 60s linear infinite,
-        ringPulse 4.5s ease-in-out infinite;
-    transform: rotate(var(--ring-rot, 0deg)) scale(var(--ring-scale));
-}
-.energy-ring::after {
+.energy-cloud::before, .energy-cloud::after {
     content: '';
     position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.65);
-    box-shadow:
-        0 0 12px rgba(255,255,255,0.8),
-        0 0 25px rgba(178,242,187,0.9);
-    opacity: 0.85;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3BaseFilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3' /%3E%3CfeColorMatrix values='0 0 0 0 0.69 0 0 0 0 0.95 0 0 0 0 0.73 0 0 0 1 0' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' /%3E%3C/svg%3E");
+    opacity: 0.5;
+    mask-image: radial-gradient(circle, black 30%, transparent 65%);
+    -webkit-mask-image: radial-gradient(circle, black 30%, transparent 65%);
+    animation: drift 15s linear infinite;
 }
-/* Clock */
+.energy-cloud::after {
+    animation: drift 25s linear infinite reverse;
+    opacity: 0.3;
+    scale: 1.2;
+}
+@keyframes drift {
+    from { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    to { transform: rotate(360deg) scale(1); }
+}
 .clock-container {
     transform-style: preserve-3d;
     transition: transform 0.15s ease-out;
@@ -120,13 +88,11 @@ html, body {
     height: 400px;
     border-radius: 50%;
     border: 2px solid rgba(200, 170, 90, 0.38);
+    background: rgba(0,0,0,0.85);
     box-shadow:
-        0 0 30px rgba(210, 170, 80, 0.12),
-        0 0 55px rgba(0, 0, 0, 0.65),
-        inset 0 0 18px rgba(0, 0, 0, 0.6),
-        inset 0 0 5px rgba(210, 170, 80, 0.2);
+        0 0 30px rgba(0, 0, 0, 0.9),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
 }
-
 .glass-cover {
     position: absolute;
     top: 0;
@@ -134,14 +100,13 @@ html, body {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    box-shadow: inset 0 20px 60px rgba(255,255,255,0.15), 
-                0 0 40px rgba(255,255,255,0.1);
-    backdrop-filter: blur(4px); 
+    background: rgba(255,255,255,0.03);
+    box-shadow: inset 0 20px 60px rgba(255,255,255,0.1), 
+                0 0 40px rgba(255,255,255,0.05);
+    backdrop-filter: blur(2px); 
     pointer-events: none;
     transform: translateZ(30px);
 }
-/* Hidden core text */
 .clock-container::after {
     content: '81 18';
     position: absolute;
@@ -150,10 +115,9 @@ html, body {
     transform: translate(-50%, -50%);
     font-size: 27px;
     letter-spacing: 3px;
-    color: #000;
-    text-shadow: 0 0 7px #00ff88;
+    color: #1a1a1a;
+    text-shadow: 0 0 5px rgba(0, 255, 136, 0.4);
 }
-/* Brand */
 .brand-name {
     position: absolute;
     top: 63%;
@@ -165,7 +129,6 @@ html, body {
     opacity: 0.6;
     text-transform: uppercase;
 }
-/* Center pulse */
 .center-dot {
     position: absolute;
     top: 50%;
@@ -183,7 +146,6 @@ html, body {
     0%,100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
     50% { transform: translate(-50%, -50%) scale(1.7); opacity: 0.4; }
 }
-/* Numbers */
 .number {
     position: absolute;
     width: 100%;
@@ -207,7 +169,6 @@ html, body {
 .n9{transform:rotate(-270deg)} .n9 div{transform:rotate(270deg)}
 .n10{transform:rotate(-300deg)} .n10 div{transform:rotate(300deg)}
 .n11{transform:rotate(-330deg)} .n11 div{transform:rotate(330deg)}
-/* Hands */
 .hand {
     position: absolute;
     bottom: 50%;
@@ -233,7 +194,7 @@ html, body {
     height: 160px;
     background: var(--sense-blue);
     box-shadow: 0 0 12px var(--sense-blue);
-}/* Tagline */
+}
 .tagline {
     margin-top: 33px;      
     color: #fff;            
@@ -243,120 +204,65 @@ html, body {
     text-align: center;    
     width: 100%;        
 }
-@media (max-width: 600px) {
-    .energy-glow {
-        width: 320px;
-        height: 320px;
-        filter: blur(18px);
-        opacity: 0.75;
-        animation: energyPulseMobile 7s ease-in-out infinite;
-    }
-}
-@keyframes energyPulseMobile {
-    0% {
-        transform: scale(0.97);
-        opacity: 0.6;
-    }
-    50% {
-        transform: scale(1.03);
-        opacity: 0.85;
-    }
-    100% {
-        transform: scale(0.97);
-        opacity: 0.6;
-    }
-}
-/* Mobile */
 @media (max-width:600px){
     .clock-container { width:260px; height:260px; }
-    .title { font-size:24px; letter-spacing:8px; }
+    .energy-cloud { width: 350px; height: 350px; }
     .number { font-size:16px; }
-}
-
-@keyframes ringSpin {
-    from { --ring-rot: 0deg; }
-    to   { --ring-rot: 360deg; }
-}
-
-@keyframes ringPulse {
-    0%   { --ring-scale: 0.992; opacity: 0.55; }
-    50%  { --ring-scale: 1.01;  opacity: 0.95; }
-    100% { --ring-scale: 0.992; opacity: 0.55; }
-}
-@media (max-width:600px){
-    .energy-ring {
-        width: 290px;
-        height: 290px;
-        border-width: 1.5px;
-        animation:
-            ringSpin 80s linear infinite,
-            ringPulse 5.5s ease-in-out infinite;
-    }
 }
 body {
     opacity: 0;
-    transition: opacity 3s ease-in;
+    transition: opacity 2s ease-in;
 }
-
 body.loaded {
     opacity: 1;
 }
-
 </style>
 </head>
 <body>
 <div id="vanta-bg"></div> 
 <div id="particles-stars"></div>
-<div id="particles-movement"></div>
 <div class="main-content">
     <div class="scene">
-    <div class="energy-glow"></div>
-    <div class="energy-ring"></div>
-    <div class="clock-container">
-        <div class="glass-cover"></div>
-        <div class="brand-name">Seensee</div>
-        <div class="center-dot"></div>
-        <div class="number n)("><div>1</div></div>
-        <div class="number n1"><div>2</div></div>
-        <div class="number n2"><div>3</div></div>
-        <div class="number n3"><div>4</div></div>
-        <div class="number n4"><div>5</div></div>
-        <div class="number n5"><div>6</div></div>
-        <div class="number nƐ3"><div>7</div></div>
-        <div class="number n7"><div>8</div></div>
-        <div class="number n8"><div>9</div></div>
-        <div class="number n9"><div>10</div></div>
-        <div class="number n10"><div>11</div></div>
-        <div class="number n11"><div>12</div></div>
-        <div class="hand hour" id="hour"></div>
-        <div class="hand minute" id="minute"></div>
-        <div class="hand second" id="second"></div>
+        <div class="energy-cloud"></div>
+        <div class="clock-container">
+            <div class="glass-cover"></div>
+            <div class="brand-name">Seensee</div>
+            <div class="center-dot"></div>
+            <div class="number n)("><div>1</div></div>
+            <div class="number n1"><div>2</div></div>
+            <div class="number n2"><div>3</div></div>
+            <div class="number n3"><div>4</div></div>
+            <div class="number n4"><div>5</div></div>
+            <div class="number n5"><div>6</div></div>
+            <div class="number nƐ3"><div>7</div></div>
+            <div class="number n7"><div>8</div></div>
+            <div class="number n8"><div>9</div></div>
+            <div class="number n9"><div>10</div></div>
+            <div class="number n10"><div>11</div></div>
+            <div class="number n11"><div>12</div></div>
+            <div class="hand hour" id="hour"></div>
+            <div class="hand minute" id="minute"></div>
+            <div class="hand second" id="second"></div>
+        </div>
     </div>
     <div class="tagline">The instinct of Sensation</div>
 </div>
 <script>
-/* Smooth clock */
 function updateClock() {
     const now = new Date();
     const ms = now.getMilliseconds();
     const s = now.getSeconds() + ms / 1000;
     const m = now.getMinutes() + s / 60;
     const h = (now.getHours() % 12) + m / 60;
-    second.style.transform = `translateX(-50%) rotate(${-s*6}deg)`;
-    minute.style.transform = `translateX(-50%) rotate(${-m*6}deg)`;
-    hour.style.transform   = `translateX(-50%) rotate(${-h*30}deg)`;
+    document.getElementById('second').style.transform = `translateX(-50%) rotate(${-s*6}deg)`;
+    document.getElementById('minute').style.transform = `translateX(-50%) rotate(${-m*6}deg)`;
+    document.getElementById('hour').style.transform   = `translateX(-50%) rotate(${-h*30}deg)`;
     requestAnimationFrame(updateClock);
 }
 updateClock();
-</script>
-<script>
+
 VANTA.FOG({
     el: "#vanta-bg",
-    mouseControls: true,
-    touchControls: true,
-    gyroControls: false,
-    minHeight: 200.0,
-    minWidth: 200.0,
     highlightColor: 0x90e0ef,
     midtoneColor: 0xb2f2bb,
     lowlightColor: 0x0b132b,
@@ -365,90 +271,39 @@ VANTA.FOG({
     speed: 0.4,
     zoom: 1.14
 });
+
 particlesJS("particles-stars", {
     particles: {
-        number: { value: 72, density: { enable: true, value_area: 800 } },
+        number: { value: 60, density: { enable: true, value_area: 800 } },
         color: { value: "#ffffff" },
-        opacity: { 
-            value: 0.6, 
-            random: true,
-            anim: { enable: true, speed: 2.5, opacity_min: 0.2, sync: false }
-        },
-        size: { 
-            value: 1.5, 
-            random: true,
-            anim: { enable: true, speed: 2, size_min: 0.5, sync: false }
-        },
-        move: { enable: true, speed: 0.2, direction: "none", random: true },
+        opacity: { value: 0.4, random: true },
+        size: { value: 1.2, random: true },
+        move: { enable: true, speed: 0.1, direction: "none", random: true },
         line_linked: { enable: false }
-    },
-    retina_detect: true
+    }
 });
-</script>
-<script>
-window.addEventListener('load', () => {
-    document.body.classList.add('loaded');
-});
-</script>
-<script>
+
+window.addEventListener('load', () => { document.body.classList.add('loaded'); });
+
 const clock = document.querySelector('.clock-container');
 const scene = document.querySelector('.scene');
-let currentX = 0;
-let currentY = 0;
-let targetX = 0;
-let targetY = 0;
+let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+
 scene.addEventListener('mousemove', (e) => {
     const rect = scene.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    targetY = (x - centerX) / centerX * 5; 
-    targetX = -(y - centerY) / centerY * 6; 
+    targetY = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2) * 5; 
+    targetX = -(e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2) * 5; 
 });
 
-scene.addEventListener('mouseleave', () => {
-    targetX = 0;
-    targetY = 0;
-});
+scene.addEventListener('mouseleave', () => { targetX = 0; targetY = 0; });
 
-function animate3D() {
-    currentX += (targetX - currentX) * 0.07;
+function animate() {
+    currentX += (targetX - currentX) * 0.08;
     currentY += (targetY - currentY) * 0.08;
-const glow = document.querySelector('.energy-glow');
-glow.style.transform = `
-    translateZ(-40px)
-    rotateX(${currentX * 0.4}deg)
-    rotateY(${currentY * 0.4}deg)
-`;
-    clock.style.transform = `
-        rotateX(${currentX}deg)
-        rotateY(${currentY}deg)
-    `;
-clock.style.filter = `
-    drop-shadow(${currentY}px ${currentX*2}px 60px rgba(0,0,0,0.6))
-`;
-    requestAnimationFrame(animate3D);
+    clock.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+    requestAnimationFrame(animate);
 }
-animate3D();
-
-let touchX = 0;
-let touchY = 0;
-
-scene.addEventListener('touchstart', e => {
-    const t = e.touches[0];
-    touchX = t.clientX;
-    touchY = t.clientY;
-});
-
-scene.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    const dx = t.clientX - touchX;
-    const dy = t.clientY - touchY;
-
-    targetY = dx * 0.07;
-    targetX = -dy * 0.08;
-});
+animate();
 </script>
 </body>
 </html>
