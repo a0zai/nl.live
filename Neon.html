@@ -1,204 +1,120 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>A(See(n)see)Z</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <meta charset="UTF-8">
+    <title>A(See(n)see)Z | Precision</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <style>
+        :root {
+            --sense-green: #b2f2bb;
+            --sense-blue: #90e0ef;
+            --sense-red: #cc7a7a;
+            --glow: 0 0 20px rgba(178,242,187,0.5);
+        }
+        html, body {
+            height: 100%; margin: 0; background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden; display: flex;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        #vanta-bg, #particles-stars {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        }
+        #vanta-bg { opacity: 0.4; filter: saturate(150%); }
 
-<style>
-:root {
-    --sense-green: #b2f2bb;
-    --sense-blue: #90e0ef;
-    --sense-red: #cc7a7a;
-}
-html, body {
-    height: 100%;
-    margin: 0;
-    background: #000;
-    font-family: 'Courier New', monospace;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        .main-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
 
-/* Background layers */
-#vanta-bg,
-#particles-stars {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-}
+        .scene { perspective: 1400px; }
 
-#vanta-bg {
-    opacity: 0.35;
-    filter: saturate(140%) contrast(115%);
-}
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(178,242,187,0.1), inset 0 0 10px rgba(255,255,255,0.05); }
+            50% { box-shadow: 0 0 60px rgba(144,224,239,0.2), inset 0 0 20px rgba(255,255,255,0.1); }
+        }
 
-/* Content */
-.main-content {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+        .clock-container {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            position: relative; width: 400px; height: 400px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0,0,0,0.2);
+            animation: glow-pulse 6s infinite ease-in-out;
+            backdrop-filter: blur(10px);
+        }
 
-.scene {
-    perspective: 1448px;
-    position: relative;
-}
+        .glass-cover {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+            transform: translateZ(40px); pointer-events: none;
+        }
 
-/* Aura */
-.aura-ring {
-    position: absolute;
-    inset: -30px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(178,242,187,0.15), transparent 70%);
-    box-shadow: 0 0 40px rgba(178,242,187,0.25);
-    animation: aura-breathe 8s ease-in-out infinite alternate;
-}
+        .brand-name {
+            position: absolute; top: 65%; left: 50%; transform: translate(-50%, -50%);
+            color: var(--sense-green); font-size: 11px; letter-spacing: 5px;
+            opacity: 0.5; transition: 0.5s;
+        }
 
-@keyframes aura-breathe {
-    from { transform: scale(1); opacity: .4; filter: blur(2px); }
-    to   { transform: scale(1.05); opacity: .8; filter: blur(5px); }
-}
+        .center-dot {
+            position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
+            background: #fff; border-radius: 50%; transform: translate(-50%, -50%);
+            z-index: 10; box-shadow: 0 0 15px #fff;
+        }
 
-/* Clock */
-.clock-container {
-    position: relative;
-    width: 400px;
-    height: 400px;
-    border-radius: 50%;
-    border: 2px solid rgba(200,170,90,0.3);
-    background: rgba(0,0,0,0.4);
-    transform-style: preserve-3d;
-    will-change: transform;
-    box-shadow: 0 0 30px rgba(0,0,0,.5),
-                inset 0 0 20px rgba(0,0,0,.4);
-}
+        .number {
+            position: absolute; width: 100%; height: 100%;
+            text-align: center; font-size: 22px; padding: 15px;
+            box-sizing: border-box; color: rgba(255,255,255,0.3);
+            transition: all 0.4s ease;
+        }
 
-/* Glass */
-.glass-cover {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: linear-gradient(135deg,
-        rgba(255,255,255,0.12),
-        transparent 60%);
-    backdrop-filter: blur(3px);
-    transform: translateZ(30px);
-}
+        .n1 { transform: rotate(30deg); } .n1 div { transform: rotate(-30deg); }
+        .n2 { transform: rotate(60deg); } .n2 div { transform: rotate(-60deg); }
+        .n3 { transform: rotate(90deg); } .n3 div { transform: rotate(-90deg); }
+        .n4 { transform: rotate(120deg); } .n4 div { transform: rotate(-120deg); }
+        .n5 { transform: rotate(150deg); } .n5 div { transform: rotate(-150deg); }
+        .n6 { transform: rotate(180deg); } .n6 div { transform: rotate(-180deg); }
+        .n7 { transform: rotate(210deg); } .n7 div { transform: rotate(-210deg); }
+        .n8 { transform: rotate(240deg); } .n8 div { transform: rotate(-240deg); }
+        .n9 { transform: rotate(270deg); } .n9 div { transform: rotate(-270deg); }
+        .n10 { transform: rotate(300deg); } .n10 div { transform: rotate(-300deg); }
+        .n11 { transform: rotate(330deg); } .n11 div { transform: rotate(-330deg); }
+        .n12 { transform: rotate(0deg); } .n12 div { transform: rotate(0deg); }
 
-/* Core mark */
-.clock-container::after {
-    content: "81 18";
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    color: #000;
-    text-shadow: 0 0 8px var(--sense-green);
-    opacity: .75;
-}
+        .number.active {
+            color: #fff; text-shadow: 0 0 15px var(--sense-green);
+            transform: scale(1.2) !important;
+        }
 
-/* Brand */
-.brand-name {
-    position: absolute;
-    top: 65%;
-    left: 50%;
-    transform: translateX(-50%);
-    color: var(--sense-green);
-    font-size: 12px;
-    letter-spacing: 7px;
-    opacity: .5;
-}
+        .hand {
+            position: absolute; bottom: 50%; left: 50%;
+            transform-origin: bottom; border-radius: 10px;
+            transform: translateX(-50%) translateZ(25px);
+        }
+        .hour { width: 6px; height: 90px; background: #fff; opacity: 0.8; }
+        .minute { width: 4px; height: 130px; background: var(--sense-red); }
+        .second { width: 2px; height: 155px; background: var(--sense-blue); }
 
-/* Center */
-.center-dot {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 4px;
-    height: 4px;
-    background: var(--sense-green);
-    border-radius: 50%;
-    transform: translate(-50%,-50%);
-    box-shadow: 0 0 15px var(--sense-green);
-    z-index: 10;
-}
+        .tagline {
+            margin-top: 40px; color: #fff; opacity: 0.4;
+            font-size: 12px; letter-spacing: 4px; text-transform: uppercase;
+        }
 
-/* Numbers */
-.number {
-    position: absolute;
-    inset: 0;
-    text-align: center;
-    font-size: 22px;
-    padding: 20px;
-    color: #f1f5f9;
-}
-.n12{transform:rotate(0)}
-.n1{transform:rotate(-30deg)} .n1 div{transform:rotate(30deg)}
-.n2{transform:rotate(-60deg)} .n2 div{transform:rotate(60deg)}
-.n3{transform:rotate(-90deg)} .n3 div{transform:rotate(90deg)}
-.n4{transform:rotate(-120deg)} .n4 div{transform:rotate(120deg)}
-.n5{transform:rotate(-150deg)} .n5 div{transform:rotate(150deg)}
-.n6{transform:rotate(-180deg)} .n6 div{transform:rotate(180deg)}
-.n7{transform:rotate(-210deg)} .n7 div{transform:rotate(210deg)}
-.n8{transform:rotate(-240deg)} .n8 div{transform:rotate(240deg)}
-.n9{transform:rotate(-270deg)} .n9 div{transform:rotate(270deg)}
-.n10{transform:rotate(-300deg)} .n10 div{transform:rotate(300deg)}
-.n11{transform:rotate(-330deg)} .n11 div{transform:rotate(330deg)}
-
-/* Hands */
-.hand {
-    position: absolute;
-    bottom: 50%;
-    left: 50%;
-    transform-origin: bottom;
-    transform: translateX(-50%) translateZ(20px);
-}
-
-.hour   { width:6px; height:100px; background:rgba(241,245,249,.3); }
-.minute { width:4px; height:140px; background:var(--sense-red); }
-.second { width:2px; height:160px; background:var(--sense-blue); }
-
-/* Tagline */
-.tagline {
-    margin-top: 40px;
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: #fff;
-    opacity: .7;
-}
-
-/* Fade in */
-body { opacity:0; transition:opacity 2s ease; }
-body.loaded { opacity:1; }
-
-/* Mobile */
-@media(max-width:600px){
-    .clock-container { width:280px; height:280px; }
-}
-</style>
+        body.loaded { opacity: 1; }
+        body { opacity: 0; transition: opacity 2s; }
+    </style>
 </head>
-
 <body>
-<div id="vanta-bg"></div>
-<div id="particles-stars"></div>
-<div class="main-content">
+    <div id="vanta-bg"></div>
+    <div id="particles-stars"></div>
+    <div class="main-content">
         <div class="scene">
-        <div class="aura-ring"></div>
-        <div class="clock-container">
-            <div class="glass-cover"></div>
-            <div class="brand-name">SEENSEE</div>
-            <div class="center-dot"></div>
-            <div class="number n)("><div>1</div></div>
+            <div class="clock-container" id="clock">
+                <div class="glass-cover"></div>
+                <div class="brand-name" id="brand">Seensee</div>
+                <div class="center-dot"></div>
+                <div class="number n)("><div>1</div></div>
         <div class="number n1"><div>2</div></div>
         <div class="number n2"><div>3</div></div>
         <div class="number n3"><div>4</div></div>
@@ -210,75 +126,88 @@ body.loaded { opacity:1; }
         <div class="number n9"><div>10</div></div>
         <div class="number n10"><div>11</div></div>
         <div class="number n11"><div>12</div></div>
-            <div class="hand hour" id="hour"></div>
-            <div class="hand minute" id="minute"></div>
-            <div class="hand second" id="second"></div>
-        </div>
+        <div class="hand hour" id="hour"></div>
+        <div class="hand minute" id="minute"></div>
+        <div class="hand second" id="second"></div>
     </div>
     <div class="tagline">The instinct of Sensation</div>
 </div>
 <script>
-/* Clock logic (unchanged) */
-const hour = document.getElementById('hour');
-const minute = document.getElementById('minute');
-const second = document.getElementById('second');
+    // 1. Clock Logic + Active Number Highlighting
+    function updateClock() {
+        const now = new Date();
+        const ms = now.getMilliseconds();
+        const s = now.getSeconds() + ms / 1000;
+        const m = now.getMinutes() + s / 60;
+        const h = (now.getHours() % 12) + m / 60;
 
-function updateClock(){
-    const now = new Date();
-    const s = now.getSeconds() + now.getMilliseconds()/1000;
-    const m = now.getMinutes() + s/60;
-    const h = (now.getHours()%12) + m/60;
+        document.getElementById('second').style.transform = `translateX(-50%) rotate(${s*6}deg)`;
+        document.getElementById('minute').style.transform = `translateX(-50%) rotate(${m*6}deg)`;
+        document.getElementById('hour').style.transform   = `translateX(-50%) rotate(${h*30}deg)`;
 
-    second.style.transform = `translateX(-50%) rotate(${-s*6}deg)`;
-    minute.style.transform = `translateX(-50%) rotate(${-m*6}deg)`;
-    hour.style.transform   = `translateX(-50%) rotate(${-h*30}deg)`;
+        // Highlight Current Hour Number
+        const currentHour = Math.round(h) || 12;
+        document.querySelectorAll('.number').forEach((num, i) => {
+            // التحقق من الرقم النشط بناءً على ترتيب العناصر
+            if(i + 1 === (currentHour === 12 ? 11 : currentHour)) { // تعديل بسيط حسب ترتيبك
+                num.classList.add('active');
+            } else {
+                num.classList.remove('active');
+            }
+        });
 
-    requestAnimationFrame(updateClock);
-}
-updateClock();
+        // Glitch Brand every minute
+        if(now.getSeconds() === 0 && ms < 50) {
+            brand.style.opacity = "1";
+            brand.style.letterSpacing = "15px";
+            setTimeout(() => { brand.style.letterSpacing = "5px"; brand.style.opacity = "0.5"; }, 200);
+        }
 
-/* 3D interaction */
-const clock = document.querySelector('.clock-container');
-const scene = document.querySelector('.scene');
-let tx=0, ty=0, cx=0, cy=0;
-
-scene.addEventListener('mousemove', e=>{
-    const r = scene.getBoundingClientRect();
-    ty = (e.clientX-(r.left+r.width/2))/(r.width/2)*6;
-    tx =-(e.clientY-(r.top+r.height/2))/(r.height/2)*6;
-});
-
-(function animate(){
-    cx += (tx-cx)*0.08;
-    cy += (ty-cy)*0.08;
-    clock.style.transform = `rotateX(${cx}deg) rotateY(${cy}deg)`;
-    requestAnimationFrame(animate);
-})();
-
-/* Effects */
-VANTA.FOG({
-    el:"#vanta-bg",
-    mouseControls:false,
-    touchControls:false,
-    highlightColor:0x90e0ef,
-    midtoneColor:0xb2f2bb,
-    lowlightColor:0x0b132b,
-    baseColor:0x000000,
-    blurFactor:0.25,
-    speed:0.45
-});
-
-particlesJS("particles-stars",{
-    particles:{
-        number:{value:60},
-        opacity:{value:.5,random:true},
-        size:{value:1.5,random:true},
-        move:{enable:true,speed:.2},
-        line_linked:{enable:false}
+        requestAnimationFrame(updateClock);
     }
-});
+    updateClock();
 
-window.addEventListener('load',()=>document.body.classList.add('loaded'));
+    // 2. Vanta & Particles
+    VANTA.FOG({
+        el: "#vanta-bg",
+        mouseControls: true, touchControls: true,
+        highlightColor: 0x90e0ef, midtoneColor: 0xb2f2bb,
+        lowlightColor: 0x0, baseColor: 0x0,
+        blurFactor: 0.4, speed: 1.0, zoom: 1.0
+    });
+
+    particlesJS("particles-stars", {
+        particles: {
+            number: { value: 100 },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5, random: true },
+            size: { value: 1, random: true },
+            move: { enable: true, speed: 0.5 }
+        },
+        interactivity: {
+            events: { onhover: { enable: true, mode: "bubble" } },
+            modes: { bubble: { distance: 200, size: 3, duration: 2, opacity: 1 } }
+        }
+    });
+
+    // 3. 3D Parallax Mouse Effect
+    const clock = document.getElementById('clock');
+    let targetX = 0, targetY = 0, currX = 0, currY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+        targetY = (e.clientX - window.innerWidth/2) / 30;
+        targetX = -(e.clientY - window.innerHeight/2) / 30;
+    });
+
+    function animate() {
+        currX += (targetX - currX) * 0.1;
+        currY += (targetY - currY) * 0.1;
+        clock.style.transform = `rotateX(${currX}deg) rotateY(${currY}deg)`;
+        requestAnimationFrame(animate);
+    }
+    animate();
+    window.onload = () => document.body.classList.add('loaded');
 </script>
 </body>
 </html>
