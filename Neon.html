@@ -45,25 +45,6 @@ html, body {
     flex-direction: column;
     align-items: center;
 }
-.toggle-btn {
-    margin-top: 33px;
-    padding: 10px 25px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--sense-green);
-    color: var(--sense-green);
-    font-family: inherit;
-    cursor: pointer;
-    backdrop-filter: blur(5px);
-    transition: 0.3s;
-    letter-spacing: 2px;
-    z-index: 100;
-}
-
-.toggle-btn:hover {
-    background: var(--sense-green);
-    color: #000;
-    box-shadow: 0 0 20px var(--sense-green);
-}
 
 /* Title */
 .title {
@@ -79,36 +60,7 @@ html, body {
 .scene {
     perspective: 1448px;
 }
-.glow-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 448px;  
-    height: 440px;
-    border-radius: 50%;
-    border: 2px solid rgba(178,242,187,0.5);
-    box-shadow: 0 0 20px rgba(178,242,187,0.8),
-                0 0 40px rgba(178,242,187,0.6),
-                0 0 60px rgba(178,242,187,0.4);
-    transform: translate(-50%, -50%) rotate(0deg);
-    pointer-events: none;
-    animation: slow-spin 25s linear infinite, pulse-glow 3s ease-in-out infinite;
-}
 
-
-@keyframes slow-spin {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to   { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-@keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(178,242,187,0.8),
-                        0 0 40px rgba(178,242,187,0.6),
-                        0 0 60px rgba(178,242,187,0.4); }
-    50%      { box-shadow: 0 0 35px rgba(178,242,187,1),
-                        0 0 60px rgba(178,242,187,0.8),
-                        0 0 90px rgba(178,242,187,0.6); }
-}
 /* Clock */
 .clock-container {
     transform-style: preserve-3d;
@@ -235,7 +187,7 @@ html, body {
 }/* Tagline */
 .tagline {
     margin-top: 33px;      
-    color: #fff;            
+    color: #ffffff;            
     opacity: 0.85;         
     font-size: 14px;        
     letter-spacing: 2px;   
@@ -267,7 +219,6 @@ body.loaded {
 <div id="particles-movement"></div>
 <div class="main-content">
     <div class="scene">
-    <div class="glow-ring"></div>
     <div class="clock-container">
         <div class="glass-cover"></div>
         <div class="brand-name">Seensee</div>
@@ -304,48 +255,6 @@ function updateClock() {
     requestAnimationFrame(updateClock);
 }
 updateClock();
-/* Idle interaction */
-let idle;
-function resetIdle(){
-    clearTimeout(idle);
-    document.body.classList.remove('idle');
-    idle = setTimeout(()=>document.body.classList.add('idle'),10000);
-}
-['mousemove','touchstart','keydown'].forEach(e =>
-    document.addEventListener(e, resetIdle)
-);
-resetIdle();
-const toggleBtn = document.getElementById('toggle-btn');
-let isArabic = false;
-
-const langData = {
-    latin: [")(", "1", "2", "3", "4", "5", "Ɛ3", "7", "8", "9", "10", "11"],
-    arabic: [")(", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩", "١٠", "١١"]
-};
-
-toggleBtn.addEventListener('click', () => {
-    isArabic = !isArabic;
-    const currentLang = isArabic ? langData.arabic : langData.latin;
-    const nums = document.querySelectorAll('.number div');
-    
-    nums.forEach((num, i) => {
-        num.style.opacity = '0';
-        setTimeout(() => {
-            num.innerText = currentLang[i];
-            
-            if (i === 6) {
-                num.style.transform = "scaleX(-1)";
-            } else {
-                num.style.transform = "scaleX(1)";
-            }
-            
-            num.style.opacity = '1';
-        }, 200);
-    });
-
-    toggleBtn.innerText = isArabic ? "SWITCH TO LATIN EDITION" : "SWITCH TO ARABIC EDITION";
-});
-
 </script>
 <script>
 VANTA.FOG({
@@ -359,9 +268,9 @@ VANTA.FOG({
     midtoneColor: 0xb2f2bb,
     lowlightColor: 0x0b132b,
     baseColor: 0x000000,
-    blurFactor: 0.14,
+    blurFactor: 0.24,
     speed: 0.4,
-    zoom: 1.15
+    zoom: 1.14
 });
 particlesJS("particles-stars", {
     particles: {
@@ -411,8 +320,8 @@ scene.addEventListener('mouseleave', () => {
 });
 
 function animate3D() {
-    currentX += (targetX - currentX) * 0.7;
-    currentY += (targetY - currentY) * 0.8;
+    currentX += (targetX - currentX) * 0.07;
+    currentY += (targetY - currentY) * 0.08;
 
     clock.style.transform = `
         rotateX(${currentX}deg)
@@ -438,40 +347,8 @@ scene.addEventListener('touchmove', e => {
     const t = e.touches[0];
     const dx = t.clientX - touchX;
     const dy = t.clientY - touchY;
-
-    targetY = dx * 0.11;
-    targetX = -dy * 0.10;
-});
-</script>
-<script>
-const clock = document.querySelector('.clock-container');
-const btn = document.getElementById('enable-gyro');
-let gyroX = 0;
-let gyroY = 0;
-function handleOrientation(event) {
-    const beta = event.beta;  
-    const gamma = event.gamma; 
-gyroX = Math.max(-15, Math.min(15, gyroX));
-gyroY = Math.max(-15, Math.min(15, gyroY));
-    clock.style.transform = `
-        rotateX(${-gyroX}deg)
-        rotateY(${gyroY}deg)
-    `;
-}
-
-btn.addEventListener('click', () => {
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-            .then(permissionState => {
-                if (permissionState === 'granted') {
-                    window.addEventListener('deviceorientation', handleOrientation);
-                    btn.style.display = 'none';
-                }
-            });
-    } else {
-        window.addEventListener('deviceorientation', handleOrientation);
-        btn.style.display = 'none';
-    }
+    targetY = dx * 0.07;
+    targetX = -dy * 0.06;
 });
 </script>
 </body>
