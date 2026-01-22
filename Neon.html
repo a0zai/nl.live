@@ -67,6 +67,7 @@ html, body {
     transition: transform 0.15s ease-out;
     will-change: transform;
     position: relative;
+    z-index: 1;
     width: 400px;
     height: 400px;
     border-radius: 50%;
@@ -213,10 +214,9 @@ body.loaded {
 .aura-ring {
     position: absolute;
     inset: -22px;
-    border-radius: 50%;
+    border: 1px solid rgba(178,242,187,0.12);
     pointer-events: none;
-    z-index: -1;
-
+    z-index: 0;
     background:
       radial-gradient(
         circle at 50% 50%,
@@ -233,11 +233,10 @@ body.loaded {
       aura-breathe 6s ease-in-out infinite,
       aura-spin 60s linear infinite;
 }
-
 /* تنفّس التوهج */
 @keyframes aura-breathe {
-    0%,100% {
-        opacity: 0.55;
+    0%,100% { opacity: 0.55; }
+    50%     { opacity: 0.85; }
         box-shadow:
           0 0 25px rgba(178,242,187,0.3),
           0 0 50px rgba(120,255,180,0.15);
@@ -312,43 +311,6 @@ function syncAura() {
 }
 syncAura();
 </script>
-</script>
-<script>
-VANTA.FOG({
-    el: "#vanta-bg",
-    mouseControls: true,
-    touchControls: true,
-    gyroControls: false,
-    minHeight: 200.0,
-    minWidth: 200.0,
-    highlightColor: 0x90e0ef,
-    midtoneColor: 0xb2f2bb,
-    lowlightColor: 0x0b132b,
-    baseColor: 0x000000,
-    blurFactor: 0.24,
-    speed: 0.4,
-    zoom: 1.14
-});
-particlesJS("particles-stars", {
-    particles: {
-        number: { value: 72, density: { enable: true, value_area: 800 } },
-        color: { value: "#ffffff" },
-        opacity: { 
-            value: 0.6, 
-            random: true,
-            anim: { enable: true, speed: 2.5, opacity_min: 0.2, sync: false }
-        },
-        size: { 
-            value: 1.5, 
-            random: true,
-            anim: { enable: true, speed: 2, size_min: 0.5, sync: false }
-        },
-        move: { enable: true, speed: 0.2, direction: "none", random: true },
-        line_linked: { enable: false }
-    },
-    retina_detect: true
-});
-</script>
 <script>
 window.addEventListener('load', () => {
     document.body.classList.add('loaded');
@@ -406,6 +368,42 @@ scene.addEventListener('touchmove', e => {
     const dy = t.clientY - touchY;
     targetY = dx * 0.07;
     targetX = -dy * 0.06;
+});
+</script>
+<script>
+VANTA.FOG({
+    el: "#vanta-bg",
+    mouseControls: true,
+    touchControls: true,
+    gyroControls: false,
+    minHeight: 200.0,
+    minWidth: 200.0,
+    highlightColor: 0x90e0ef,
+    midtoneColor: 0xb2f2bb,
+    lowlightColor: 0x0b132b,
+    baseColor: 0x000000,
+    blurFactor: 0.24,
+    speed: 0.4,
+    zoom: 1.14
+});
+particlesJS("particles-stars", {
+    particles: {
+        number: { value: 72, density: { enable: true, value_area: 800 } },
+        color: { value: "#ffffff" },
+        opacity: { 
+            value: 0.6, 
+            random: true,
+            anim: { enable: true, speed: 2.5, opacity_min: 0.2, sync: false }
+        },
+        size: { 
+            value: 1.5, 
+            random: true,
+            anim: { enable: true, speed: 2, size_min: 0.5, sync: false }
+        },
+        move: { enable: true, speed: 0.2, direction: "none", random: true },
+        line_linked: { enable: false }
+    },
+    retina_detect: true
 });
 </script>
 </body>
