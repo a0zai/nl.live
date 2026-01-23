@@ -146,19 +146,18 @@ html, body {
     box-sizing: border-box;
     color: #f1f5f9;
 }
-.n1{transform:rotate(0)}
-.n2{transform:rotate(-30deg)} .n2 div{transform:rotate(30deg)}
-.n3{transform:rotate(-60deg)} .n3 div{transform:rotate(60deg)}
-.n4{transform:rotate(-90deg)} .n4 div{transform:rotate(90deg)}
-.n5{transform:rotate(-120deg)} .n5 div{transform:rotate(120deg)}
-.n6{transform:rotate(-150deg)} .n6 div{transform:rotate(150deg)}
-.n7{transform:rotate(-180deg)} .n7 div{transform:rotate(180deg)}
-.n8{transform:rotate(-210deg)} .n8 div{transform:rotate(210deg)}
-.n9{transform:rotate(-240deg)} .n9 div{transform:rotate(240deg)}
-.n10{transform:rotate(-270deg)} .n10 div{transform:rotate(270deg)}
-.n11{transform:rotate(-300deg)} .n11 div{transform:rotate(300deg)}
-.n12{transform:rotate(-330deg)} .n12 div{transform:rotate(330deg)}
-/* Hands */
+.n1  { transform: rotate(0deg); }    .n1 div  { transform: rotate(0deg); }
+.n2  { transform: rotate(30deg); }   .n2 div  { transform: rotate(-30deg); }
+.n3  { transform: rotate(60deg); }   .n3 div  { transform: rotate(-60deg); }
+.n4  { transform: rotate(90deg); }   .n4 div  { transform: rotate(-90deg); }
+.n5  { transform: rotate(120deg); }  .n5 div  { transform: rotate(-120deg); }
+.n6  { transform: rotate(150deg); }  .n6 div  { transform: rotate(-150deg); }
+.n7  { transform: rotate(180deg); }  .n7 div  { transform: rotate(-180deg); }
+.n8  { transform: rotate(210deg); }  .n8 div  { transform: rotate(-210deg); }
+.n9  { transform: rotate(240deg); }  .n9 div  { transform: rotate(-240deg); }
+.n10 { transform: rotate(270deg); }  .n10 div { transform: rotate(-270deg); }
+.n11 { transform: rotate(300deg); }  .n11 div { transform: rotate(-300deg); }
+.n12 { transform: rotate(330deg); }  .n12 div { transform: rotate(-330deg); }
 .hand {
     position: absolute;
     bottom: 50%;
@@ -223,18 +222,18 @@ body.loaded {
         <div class="glass-cover"></div>
         <div class="brand-name">Seensee</div>
         <div class="center-dot"></div>
-        <div class="number n)("><div>1</div></div>
-        <div class="number n1"><div>2</div></div>
-        <div class="number n2"><div>3</div></div>
-        <div class="number n3"><div>4</div></div>
-        <div class="number n4"><div>5</div></div>
-        <div class="number n5"><div>6</div></div>
-        <div class="number nƐ3"><div>7</div></div>
-        <div class="number n7"><div>8</div></div>
-        <div class="number n8"><div>9</div></div>
-        <div class="number n9"><div>10</div></div>
-        <div class="number n10"><div>11</div></div>
-        <div class="number n11"><div>12</div></div>
+        <div class="number n1"><div>1</div></div>
+        <div class="number n2"><div>2</div></div>
+        <div class="number n3"><div>3</div></div>
+        <div class="number n4"><div>4</div></div>
+        <div class="number n5"><div>5</div></div>
+        <div class="number n6"><div>6</div></div>
+        <div class="number n7"><div>7</div></div>
+        <div class="number n8"><div>8</div></div>
+        <div class="number n9"><div>9</div></div>
+        <div class="number n10"><div>10</div></div>
+        <div class="number n11"><div>11</div></div>
+        <div class="number n12"><div>12</div></div>
         <div class="hand hour" id="hour"></div>
         <div class="hand minute" id="minute"></div>
         <div class="hand second" id="second"></div>
@@ -249,10 +248,10 @@ function updateClock() {
     const s = now.getSeconds() + ms / 1000;
     const m = now.getMinutes() + s / 60;
     const h = (now.getHours() % 12) + m / 60;
-    second.style.transform = `translateX(-50%) rotate(${-s*6}deg)`;
-    minute.style.transform = `translateX(-50%) rotate(${-m*6}deg)`;
-    hour.style.transform   = `translateX(-50%) rotate(${-h*30}deg)`;
-    requestAnimationFrame(updateClock);
+second.style.transform = `translateX(-50%) rotate(${-s*6 + 30}deg)`;
+minute.style.transform = `translateX(-50%) rotate(${-m*6 + 30}deg)`;
+hour.style.transform   = `translateX(-50%) rotate(${-h*30 + 30}deg)`;  
+  requestAnimationFrame(updateClock);
 }
 updateClock();
 /* Idle interaction */
