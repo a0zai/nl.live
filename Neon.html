@@ -80,20 +80,18 @@ html, body {
     box-sizing: border-box;
     color: #f1f5f9;
 }
-/* ترتيب الأرقام مع الرقم 1 أعلى الساعة */
-.n1  { transform: rotate(0deg); }   .n1 div  { transform: rotate(0deg); }
-.n2  { transform: rotate(-30deg); } .n2 div  { transform: rotate(30deg); }
-.n3  { transform: rotate(-60deg); } .n3 div  { transform: rotate(60deg); }
-.n4  { transform: rotate(-90deg); } .n4 div  { transform: rotate(90deg); }
-.n5  { transform: rotate(-120deg); } .n5 div { transform: rotate(120deg); }
-.nƐ3 { transform: rotate(-150deg); } .nƐ3 div { transform: rotate(150deg); } /* الرقم 6 */
-.n7  { transform: rotate(-180deg); } .n7 div { transform: rotate(180deg); }
-.n8  { transform: rotate(-210deg); } .n8 div { transform: rotate(210deg); }
-.n9  { transform: rotate(-240deg); } .n9 div { transform: rotate(240deg); }
-.n10 { transform: rotate(-270deg); } .n10 div { transform: rotate(270deg); }
-.n11 { transform: rotate(-300deg); } .n11 div { transform: rotate(300deg); }
-.n12 { transform: rotate(-330deg); } .n12 div { transform: rotate(330deg); } /* الرقم 12 */
-
+.n1  { transform: rotate(0deg); }    .n1 div  { transform: rotate(0deg); }  
+.n2  { transform: rotate(60deg); }   .n2 div  { transform: rotate(-60deg); }
+.n3  { transform: rotate(120deg); }  .n3 div  { transform: rotate(-120deg); }
+.n4  { transform: rotate(180deg); }  .n4 div  { transform: rotate(-180deg); }
+.n5  { transform: rotate(240deg); }  .n5 div  { transform: rotate(-240deg); }
+.nƐ3 { transform: rotate(300deg); }  .nƐ3 div { transform: rotate(-300deg); }  /* الرقم 6 */
+.n7  { transform: rotate(0deg); }    .n7 div { transform: rotate(0deg); } 
+.n8  { transform: rotate(60deg); }   .n8 div { transform: rotate(-60deg); } 
+.n9  { transform: rotate(120deg); }  .n9 div { transform: rotate(-120deg); } 
+.n10 { transform: rotate(180deg); }  .n10 div { transform: rotate(-180deg); } 
+.n11 { transform: rotate(240deg); }  .n11 div { transform: rotate(-240deg); } 
+.n12 { transform: rotate(300deg); }  .n12 div { transform: rotate(-300deg); } 
 /* Hands */
 .hand {
     position: absolute;
@@ -148,8 +146,6 @@ html, body {
       <div class="glass-cover"></div>
       <div class="brand-name">Seensee</div>
       <div class="center-dot"></div>
-
-      <!-- الأرقام -->
       <div class="number n1"><div>1</div></div>
       <div class="number n2"><div>2</div></div>
       <div class="number n3"><div>3</div></div>
@@ -162,8 +158,6 @@ html, body {
       <div class="number n10"><div>10</div></div>
       <div class="number n11"><div>11</div></div>
       <div class="number n12"><div>12</div></div>
-
-      <!-- العقارب -->
       <div class="hand hour" id="hour"></div>
       <div class="hand minute" id="minute"></div>
       <div class="hand second" id="second"></div>
@@ -173,23 +167,20 @@ html, body {
 </div>
 
 <script>
-/* Smooth clock */
 function updateClock() {
     const now = new Date();
     const ms = now.getMilliseconds();
     const s = now.getSeconds() + ms / 1000;
     const m = now.getMinutes() + s / 60;
     const h = (now.getHours() % 12) + m / 60;
-
-    second.style.transform = `translate(-50%, -50%) rotate(${-s*6}deg)`;
-    minute.style.transform = `translate(-50%, -50%) rotate(${-m*6}deg)`;
-    hour.style.transform   = `translate(-50%, -50%) rotate(${-h*30}deg)`;
+    second.style.transform = `translateX(-50%) rotate(${s*30}deg)`; // كل رقم يمثل 30°
+    minute.style.transform = `translateX(-50%) rotate(${m*6}deg)`; // 360/60 = 6° لكل دقيقة
+    hour.style.transform   = `translateX(-50%) rotate(${h*30}deg)`; // 360/12 = 30° لكل ساعة
 
     requestAnimationFrame(updateClock);
 }
 updateClock();
 </script>
-
 <script>
 /* Vanta fog */
 VANTA.FOG({
