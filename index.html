@@ -262,8 +262,8 @@ function updateClock() {
     const h = (now.getHours() % 12) + m / 60;
     hour.style.transform = `translateX(-50%) rotate(${-h*30 + 30}deg)`;
     n1.style.transform = `translateX(-50%) rotate(${h*30 - 30}deg)`;
-    second.style.transform = `translateX(-50%) rotate(${-s*6 - 30}deg)`;
-    minute.style.transform = `translateX(-50%) rotate(${-m*6 + 30}deg)`;
+    second.style.transform = `translateX(-50%) rotate(${-s*6 - 60}deg)`;
+    minute.style.transform = `translateX(-50%) rotate(${-m*6 - 60}deg)`;
     requestAnimationFrame(updateClock);
 }
 updateClock();
