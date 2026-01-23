@@ -263,7 +263,7 @@ function updateClock() {
     hour.style.transform = `translateX(-50%) rotate(${-h*30 + 30}deg)`;
     n1.style.transform = `translateX(-50%) rotate(${h*30 - 30}deg)`;
     second.style.transform = `translateX(-50%) rotate(${-s*6 - 30}deg)`;
-    minute.style.transform = `translateX(-50%) rotate(${-m*6 - 30}deg)`;
+    minute.style.transform = `translateX(-50%) rotate(${-m*6 + 30}deg)`;
     requestAnimationFrame(updateClock);
 }
 updateClock();
