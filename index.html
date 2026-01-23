@@ -168,17 +168,12 @@ html, body {
 }
 .n1 {
     position: absolute;
-    top: 0;
+    bottom: 100%; 
     left: 50%;
-    transform: translateX(-50%) rotate(0deg);
+    transform: translateX(-50%) rotate(0deg); /* يبقى أفقي */
     font-size: 24px;
     color: var(--sense-green);
     white-space: nowrap;
-}
-.n1 div {
-    display: inline-block;
-    padding: 0 6px;
-    border-top: 2px solid var(--sense-green);
 }
 .hour {
     width: 6px;
@@ -248,7 +243,7 @@ body.loaded {
         <div class="number n11"><div>3</div></div>
         <div class="number n12"><div>2</div></div>
         <div class="hand hour" id="hour">
-    <div class="number n1"><div>1</div></div>
+    <div class="n1">1</div>
 </div>
         <div class="hand minute" id="minute"></div>
         <div class="hand second" id="second"></div>
@@ -257,16 +252,19 @@ body.loaded {
 </div>
 <script>
 /* Smooth clock */
+const hour = document.getElementById('hour');
+const n1 = hour.querySelector('.n1'); 
 function updateClock() {
     const now = new Date();
     const ms = now.getMilliseconds();
     const s = now.getSeconds() + ms / 1000;
     const m = now.getMinutes() + s / 60;
     const h = (now.getHours() % 12) + m / 60;
-hour.style.transform = `translateX(-50%) rotate(${-h*30 + 30}deg)`;
-second.style.transform = `translateX(-50%) rotate(${-s*6 + 30}deg)`;
-minute.style.transform = `translateX(-50%) rotate(${-m*6 + 30}deg)`;
-  requestAnimationFrame(updateClock);
+    hour.style.transform = `translateX(-50%) rotate(${-h*30 + 30}deg)`;
+    n1.style.transform = `translateX(-50%) rotate(${h*30 - 30}deg)`;
+    second.style.transform = `translateX(-50%) rotate(${-s*6 + 30}deg)`;
+    minute.style.transform = `translateX(-50%) rotate(${-m*6 + 30}deg)`;
+    requestAnimationFrame(updateClock);
 }
 updateClock();
 /* Idle interaction */
