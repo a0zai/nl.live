@@ -170,10 +170,11 @@ html, body {
     position: absolute;
     bottom: 100%; 
     left: 50%;
-    transform: translateX(-50%) rotate(0deg); /* يبقى أفقي */
+    transform: translateX(-50%) rotate(0deg); 
     font-size: 24px;
     color: #f1f5f9;
     white-space: nowrap;
+    transition: opacity 0.3s ease;
 }
 .hour {
     width: 6px;
@@ -264,6 +265,7 @@ function updateClock() {
     n1.style.transform = `translateX(-50%) rotate(${h*30 - 30}deg)`;
     second.style.transform = `translateX(-50%) rotate(${-s*6 + 30}deg)`;
     minute.style.transform = `translateX(-50%) rotate(${-m*6 + 0}deg)`;
+n1.style.opacity = (h >= 10 || h < 1) ? 1 : 0;
     requestAnimationFrame(updateClock);
 }
 updateClock();
