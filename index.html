@@ -90,6 +90,15 @@ body::before {
     background-size: 100% 2px, 3px 100%;
     pointer-events: none;
 }
+#top-logo {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 350px;
+    height: auto;
+    z-index: 10000;
+}
 
 #terminal-console {
     position: fixed;
@@ -251,6 +260,7 @@ h2 {
 <body>
   <link rel="manifest" href="manifest.json">
 <canvas id="matrix-canvas"></canvas> <div class="container">
+   <img src="N.png" id="top-logo">
    <div id="terminal-console"></div>
 <div id="login-ui" class="box">
     <input id="nick-input" placeholder="Naam..." maxlength="12">
