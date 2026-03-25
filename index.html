@@ -214,7 +214,6 @@ h2 {
 </style>
 </head>
 <body>
-
 <canvas id="matrix-canvas"></canvas> <div class="container">
     <div id="login-ui" class="box">
        <input id="nick-input" placeholder="Naam..." maxlength="12">
@@ -224,7 +223,6 @@ h2 {
         <button onclick="boot()">Klik Chat</button>
     </div>
     <div id="chat-ui" class="box" style="display:none;"> <div style="display:flex; justify-content:space-between; font-size:11px; border-bottom: 1px solid var(--neon); padding-bottom: 5px; width: 100%;">
-        <h1 style="text-align:center; width:100%; margin-bottom:5px;">NL.LIVE</h1>
 <div style="display:flex; justify-content:space-between; font-size:11px; border-bottom: 1px solid var(--neon); padding-bottom: 5px; width: 100%;">
     <span id="zone-display">Z: SCANNING</span>
     <span id="online-count">nl 0 live</span>
@@ -468,20 +466,6 @@ function drawMatrix() {
 }
 setInterval(drawMatrix, 60);
 
-</script>
-<script>
-const path = window.location.pathname.replace(/^\/+/, "");
-
-if (path) {
-    const city = path
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, l => l.toUpperCase());
-
-    document.title = `Live Chat ${city} | NL.LIVE`;
-
-    const h1 = document.querySelector("h1");
-    if (h1) h1.textContent = `Live Chat ${city}`;
-}
 </script>
 </body>
 </html>
