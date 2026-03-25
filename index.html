@@ -211,9 +211,11 @@ h2 {
     text-align: right;
     margin-bottom: 5px;
 }
+
 </style>
 </head>
 <body>
+  <link rel="manifest" href="manifest.json">
 <canvas id="matrix-canvas"></canvas> <div class="container">
 <div id="login-ui" class="box">
     <input id="nick-input" placeholder="Naam..." maxlength="12">
@@ -229,6 +231,16 @@ h2 {
             <span id="zone-display">Z: SCANNING</span>
             <span id="online-count">nl 0 live</span>
         </div>
+        <button id="sos-btn" onclick="window.sendSOS()" style="background: #ff3333; color: white; width: 100%; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 0 15px #ff3333; font-size: 14px; animation: blink 1s infinite;">
+    🆘 SOS EMERGENCY
+</button>
+<style>
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+</style>
         <div id="chat-box"></div>
         <div id="char-limit">33 LEFT</div>
         <div style="display:flex; gap:5px; width: 100%;">
@@ -406,17 +418,20 @@ window.updateStreets = (cityVal) => {
         sSelect.value = "";
     }
 };
-
+// 4. وظيفة الدخول والتحقق من الرادار
 window.boot = () => {
+    // طلب إذن الإشعارات فور الضغط
+    if ('Notification' in window) { Notification.requestPermission(); }
+
     const nickInput = document.getElementById("nick-input");
     const nick = nickInput.value.trim().toUpperCase();
     const cityVal = document.getElementById("city-select").value;
     const cityName = cityVal.replace(/_/g, ' ');
     const street = document.getElementById("street-select").value;
 
-    if(!/^[A-Z0-9]+$/.test(nick)) return alert("INVALID ID (Use A-Z, 0-9)");
+    if(!/^[A-Z0-9]+$/.test(nick)) return alert("INVALID ID (A-Z, 0-9)");
     if(!cityVal) return alert("SELECT CITY");
-    if (streetData[cityName] && !street) return alert("KIES EEN STRAAT (SELECT STREET)");
+    if (streetData[cityName] && !street) return alert("SELECT STREET");
 
     localStorage.setItem("a0z_nick_v6", nick);
     
@@ -427,16 +442,14 @@ window.boot = () => {
         if (street && streetData[cityName] && streetData[cityName][street]) {
             const target = streetData[cityName][street];
             const dist = getDistance(uLat, uLon, target.lat, target.lon);
-            
+            // تقليل المسافة لـ 309 متر كما طلبت
             if (dist > 309) {
-                return alert(`ACCESS DENIED: Je bent ${Math.round(dist)}m verwijderd. Je moet in de buurt van ${street} zijn.`);
+                return alert(`ACCESS DENIED: Je bent ${Math.round(dist)}m verwijderd.`);
             }
         }
-        
         startRadar(cityVal, nick, street);
     }, (err) => {
-        console.error(err);
-        alert("GPS REQUIRED FOR RADAR SCAN. Please enable location.");
+        alert("GPS REQUIRED.");
     }, { enableHighAccuracy: true });
 };
 
@@ -447,12 +460,11 @@ function startRadar(zID, myNick, sID = null) {
     
     const displayZone = sID ? sID : zID.replace(/_/g, ' ');
     const dbPath = sID ? `v6/${zID}/streets/${sID}` : `v6/${zID}`;
-    
     document.getElementById("zone-display").textContent = `Z: ${displayZone}`;
 
     const msgRef = ref(db, `${dbPath}/msgs`);
-    const onlineRef = ref(db, `${dbPath}/online/${myNick}`);
     const onlineList = ref(db, `${dbPath}/online`);
+    const onlineRef = ref(db, `${dbPath}/online/${myNick}`);
 
     set(onlineRef, serverTimestamp());
     onDisconnect(onlineRef).remove();
@@ -473,72 +485,66 @@ function startRadar(zID, myNick, sID = null) {
         const inp = document.getElementById("msg-input");
         const txt = inp.value.trim();
         if(!txt) return;
-
         get(usageRef).then((s) => {
             let used = s.val() || 0;
-            if(used + txt.length > 33) return alert("LIMIT REACHED FOR TODAY");
-            
-            push(msgRef, { 
-                n: myNick, 
-                m: txt, 
-                t: serverTimestamp() 
-            });
-            
+            if(used + txt.length > 33) return alert("LIMIT REACHED");
+            push(msgRef, { n: myNick, m: txt, t: serverTimestamp() });
             set(usageRef, used + txt.length);
             inp.value = "";
         });
     };
 
+    // دالة إرسال SOS
+    window.sendSOS = () => {
+        if(!confirm("⚠️ SEND SOS TO NEIGHBORS?")) return;
+        navigator.geolocation.getCurrentPosition((p) => {
+            const mapUrl = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+            push(msgRef, { n: `🚨 SOS: ${myNick}`, m: `HULP NODIG! Locatie: ${mapUrl}`, t: serverTimestamp(), isSOS: true });
+        });
+    };
+
     onChildAdded(msgRef, (s) => {
         const d = s.val();
-        
-        const displayTime = d.t ? new Date(d.t).toLocaleTimeString() : new Date().toLocaleTimeString();
-        const radarBeep = new Audio('https://fsa.zapsplat.com/p_audio/zapsplat_multimedia_beep_short_high_pitched_004_102073.mp3');
-        radarBeep.volume = 0.3; 
-        radarBeep.play().catch(() => {});
-
         const chatBox = document.getElementById("chat-box");
-        chatBox.style.borderColor = "#fff";
-        setTimeout(() => { chatBox.style.borderColor = "var(--neon)"; }, 150);
-
         const div = document.createElement("div");
         div.className = "msg-line";
-        div.innerHTML = `<span class="timestamp">[${displayTime}]</span><br><b>${d.n}✅</b>: ${d.m}`;
-        
+
+        if (d.isSOS) {
+            const sosAlarm = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+            sosAlarm.play().catch(() => {});
+            div.style.background = "rgba(255, 0, 0, 0.2)";
+            div.style.borderLeft = "4px solid #ff3333";
+        } else {
+            new Audio('https://fsa.zapsplat.com/p_audio/zapsplat_multimedia_beep_short_high_pitched_004_102073.mp3').play().catch(() => {});
+        }
+
+        const displayTime = d.t ? new Date(d.t).toLocaleTimeString() : new Date().toLocaleTimeString();
+        div.innerHTML = `<span class="timestamp">[${displayTime}]</span><br><b style="${d.isSOS ? 'color:#ff3333;' : ''}">${d.n}✅</b>: ${d.m}`;
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 }
 
-// 6. تأثير الماتريكس (Matrix Background)
+// 6. الماتريكس و PWA (نهاية الكود)
 const canvas = document.getElementById('matrix-canvas');
 const ctx = canvas.getContext('2d');
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-const chars = "0101010101010101";
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
-
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+const chars = "01"; const fontSize = 16;
+const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
 function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#00ff41";
-    ctx.font = fontSize + "px monospace";
     drops.forEach((y, i) => {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * fontSize, y * fontSize);
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y * fontSize);
         if (y * fontSize > canvas.height && Math.random() > 0.98) drops[i] = 0;
         drops[i]++;
     });
 }
 setInterval(drawMatrix, 60);
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(() => console.log('PWA OK ✅'));
+}
 
 </script>
 </body>
