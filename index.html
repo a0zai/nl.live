@@ -492,7 +492,7 @@ function startRadar(zID, myNick, sID = null) {
         if(!txt) return;
         get(usageRef).then((s) => {
             let used = s.val() || 0;
-            if(used + txt.length > 33) return alert("LIMIT REACHED");
+            if(used + txt.length > 99) return alert("LIMIT REACHED");
             push(msgRef, { n: myNick, m: txt, t: serverTimestamp() });
             set(usageRef, used + txt.length);
             inp.value = "";
