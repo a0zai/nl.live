@@ -92,7 +92,7 @@ body::before {
 }
 #top-logo {
     position: fixed;
-    top: 20px;
+    top: 39px;
     left: 50%;
     transform: translateX(-50%);
     width: 350px;
@@ -108,7 +108,7 @@ body::before {
     min-height: 220px;
     padding: 20px;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 7px;
+    font-size: 9px;
     line-height: 1.6;
     z-index: 9999;
     border-radius: 4px;
@@ -123,7 +123,7 @@ body::before {
 }
 
 @keyframes blink {
-    50% { opacity: 0.7; }
+    50% { opacity: 0.9; }
 }
 
 .container {
@@ -183,18 +183,28 @@ body::before {
 input, select {
     width: 78%;
     padding: 12px;
-    border: 1px solid #00ff41;    
+    background: rgba(0, 20, 0, 0.7); 
+    border: 1px solid rgba(0, 255, 65, 0.5);
+    color: #00ff41;
     font-family: inherit;
     outline: none;
     box-sizing: border-box;
     transition: 0.3s;
+    border-radius: 4px; 
+    box-shadow: inset 0 0 5px rgba(0, 255, 65, 0.1);
 }
 
 input:focus, select:focus {
-    box-shadow: var(--neon-shadow);
-    border: 1px solid #00ff41;       
-    border-color: var(--neon);
+    border-color: #00ff41;
+    background: rgba(0, 40, 0, 0.8);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.4), inset 0 0 10px rgba(0, 255, 65, 0.2);
 }
+
+select option {
+    background: #000;
+    color: #00ff41;
+}
+
 
 button {
     padding: 12px;
@@ -298,13 +308,6 @@ h2 {
 const consoleBox = document.getElementById('terminal-console');
 
 const scripts = [
-    "    /''''''\        ",
-    "|,  .-.  .-.  ,|    ",
-    "| )(_o/  \o_)( |    ",
-    "|/     /\     \|    ",
-    "(_     ^^     _)    ",
-    " \__|IIIIII|__/     ",
-    "  | \IIIIII/ |      ",
     "   `--------`       ",
     "> GEBRUIKSVOORWAARDEN:",
     "- Respecteer alle gebruikers op straat.",
@@ -325,7 +328,7 @@ function startTyping() {
         if (charIndex < currentLine.length) {
             consoleBox.innerHTML += currentLine.charAt(charIndex);
             charIndex++;
-            setTimeout(startTyping, 78); 
+            setTimeout(startTyping, 69); 
         } else {
             consoleBox.innerHTML += "<br>";
             lineIndex++;
@@ -451,7 +454,7 @@ const nlCities = [
   { name: "Woerden", province: "Utrecht" }, { name: "Montfoort", province: "Utrecht" },
   { name: "Oudewater", province: "Utrecht" }
 ];
-// تعبئة قائمة المدن عند تحميل الصفحة
+
 const citySelect = document.getElementById("city-select");
 nlCities.sort((a, b) => a.name.localeCompare(b.name)).forEach(city => {
     let opt = document.createElement("option");
@@ -460,7 +463,7 @@ nlCities.sort((a, b) => a.name.localeCompare(b.name)).forEach(city => {
     citySelect.appendChild(opt);
 });
 
-// استرجاع الاسم المحفوظ إن وجد
+
 let savedNick = localStorage.getItem("a0z_nick_v6");
 if(savedNick) document.getElementById("nick-input").value = savedNick;
 const streetData = {
@@ -475,7 +478,6 @@ const streetData = {
   }
 };
 
-// 2. دالة حساب المسافة (ضرورية جداً لعمل الرادار)
 function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; 
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -487,7 +489,6 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * c * 1000; 
 }
 
-// 3. تحديث القائمة عند اختيار مدينة
 window.updateStreets = (cityVal) => {
     const city = cityVal.replace(/_/g, ' ');
     const sSelect = document.getElementById("street-select");
@@ -505,9 +506,9 @@ window.updateStreets = (cityVal) => {
         sSelect.value = "";
     }
 };
-// 4. وظيفة الدخول والتحقق من الرادار
+
 window.boot = () => {
-    // طلب إذن الإشعارات فور الضغط
+
     if ('Notification' in window) { Notification.requestPermission(); }
 
     const nickInput = document.getElementById("nick-input");
@@ -529,7 +530,6 @@ window.boot = () => {
         if (street && streetData[cityName] && streetData[cityName][street]) {
             const target = streetData[cityName][street];
             const dist = getDistance(uLat, uLon, target.lat, target.lon);
-            // تقليل المسافة لـ 309 متر كما طلبت
             if (dist > 309) {
                 return alert(`ACCESS DENIED: Je bent ${Math.round(dist)}m verwijderd.`);
             }
@@ -540,7 +540,6 @@ window.boot = () => {
     }, { enableHighAccuracy: true });
 };
 
-// 5. وظيفة الرادار والدردشة
 function startRadar(zID, myNick, sID = null) {
     document.getElementById("login-ui").style.display = "none";
     document.getElementById("chat-ui").style.display = "flex";
@@ -581,7 +580,6 @@ function startRadar(zID, myNick, sID = null) {
         });
     };
 
-    // دالة إرسال SOS
     window.sendSOS = () => {
         if(!confirm("⚠️ SEND SOS TO NEIGHBORS?")) return;
         navigator.geolocation.getCurrentPosition((p) => {
@@ -617,11 +615,10 @@ document.getElementById("back-btn").onclick = () => {
     });
 }
 
-// 6. الماتريكس و PWA (نهاية الكود)
 const canvas = document.getElementById('matrix-canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-const chars = "01"; const fontSize = 16;
+const chars = "01"; const fontSize = 27;
 const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
 function drawMatrix() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
