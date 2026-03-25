@@ -352,24 +352,33 @@ const nlCities = [
   { name: "Woerden", province: "Utrecht" }, { name: "Montfoort", province: "Utrecht" },
   { name: "Oudewater", province: "Utrecht" }
 ];
+// تعبئة قائمة المدن عند تحميل الصفحة
+const citySelect = document.getElementById("city-select");
+nlCities.sort((a, b) => a.name.localeCompare(b.name)).forEach(city => {
+    let opt = document.createElement("option");
+    opt.value = city.name.replace(/\s+/g, '_');
+    opt.textContent = `${city.name.toUpperCase()} (${city.province})`;
+    citySelect.appendChild(opt);
+});
 
+// استرجاع الاسم المحفوظ إن وجد
+let savedNick = localStorage.getItem("a0z_nick_v6");
+if(savedNick) document.getElementById("nick-input").value = savedNick;
+
+ // 1. قاعدة بيانات الشوارع (Doetinchem)
+const streetData = {
   "Doetinchem": {
-    "KAPOENIESTRAAT": { lat: 51.9658, lon: 6.2882 }, 
-    "RAADHUISSTRAAT": { lat: 51.9662, lon: 6.2900 }, 
-    "BURG. VAN NISPENSTRAAT": { lat: 51.9670, lon: 6.2915 }, 
-    "SIMONSPLEIN": { lat: 51.9652, lon: 6.2895 }, // الساحة الرئيسية
+    "KAPOENIESTRAAT": { lat: 51.9658, lon: 6.2882 },
+    "RAADHUISSTRAAT": { lat: 51.9662, lon: 6.2900 },
     "HAMBURGERSTRAAT": { lat: 51.9649, lon: 6.2905 },
-    "GRUTSTRAAT": { lat: 51.9655, lon: 6.2890 }, // شارع المطاعم
+    "GRUTSTRAAT": { lat: 51.9655, lon: 6.2890 },
+    "SIMONSPLEIN": { lat: 51.9652, lon: 6.2895 },
     "HOFSTRAAT": { lat: 51.9640, lon: 6.2885 },
-    "MARKT TEN WESTEN": { lat: 51.9655, lon: 6.2875 },
-    "VARKENSMARKT": { lat: 51.9645, lon: 6.2865 },
-    "STATIONSPLEIN": { lat: 51.9595, lon: 6.2985 }, // محطة القطار
-    "TERBORGSEWEG": { lat: 51.9660, lon: 6.2950 },
-    "KEPPELSEWEG": { lat: 51.9685, lon: 6.2830 },
-    "DR. HUBER NOODTSTRAAT": { lat: 51.9675, lon: 6.2930 }
+    "TERBORGSEWEG": { lat: 51.9660, lon: 6.2950 }
   }
 };
 
+// 2. دالة حساب المسافة (ضرورية جداً لعمل الرادار)
 function getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; 
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -381,7 +390,7 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * c * 1000; 
 }
 
-// 3. تحديث قائمة الشوارع عند اختيار مدينة
+// 3. تحديث القائمة عند اختيار مدينة
 window.updateStreets = (cityVal) => {
     const city = cityVal.replace(/_/g, ' ');
     const sSelect = document.getElementById("street-select");
@@ -400,35 +409,19 @@ window.updateStreets = (cityVal) => {
     }
 };
 
-// 4. تعبئة قائمة المدن (تأكد أن قائمة nlCities معرفة قبل هذا السطر)
-const select = document.getElementById("city-select");
-nlCities.sort((a, b) => a.name.localeCompare(b.name));
-nlCities.forEach(city => {
-    let opt = document.createElement("option");
-    opt.value = city.name.replace(/\s+/g, '_');
-    opt.textContent = `${city.name.toUpperCase()} (${city.province})`;
-    select.appendChild(opt);
-});
-
-let savedNick = localStorage.getItem("a0z_nick_v6");
-if(savedNick) document.getElementById("nick-input").value = savedNick;
-
-// 5. وظيفة الإقلاع والتحقق من الرادار والجغرافي
 window.boot = () => {
-    const nick = document.getElementById("nick-input").value.trim().toUpperCase();
+    const nickInput = document.getElementById("nick-input");
+    const nick = nickInput.value.trim().toUpperCase();
     const cityVal = document.getElementById("city-select").value;
     const cityName = cityVal.replace(/_/g, ' ');
     const street = document.getElementById("street-select").value;
 
     if(!/^[A-Z0-9]+$/.test(nick)) return alert("INVALID ID (Use A-Z, 0-9)");
     if(!cityVal) return alert("SELECT CITY");
-    
-    // فحص إذا كانت المدينة تتطلب اختيار شارع
     if (streetData[cityName] && !street) return alert("KIES EEN STRAAT (SELECT STREET)");
 
     localStorage.setItem("a0z_nick_v6", nick);
     
-    // تشغيل الرادار والتحقق من الموقع
     navigator.geolocation.getCurrentPosition((p) => {
         const uLat = p.coords.latitude;
         const uLon = p.coords.longitude;
@@ -436,18 +429,24 @@ window.boot = () => {
         if (street && streetData[cityName] && streetData[cityName][street]) {
             const target = streetData[cityName][street];
             const dist = getDistance(uLat, uLon, target.lat, target.lon);
+            
             if (dist > 366) {
                 return alert(`ACCESS DENIED: Je bent ${Math.round(dist)}m verwijderd. Je moet in de buurt van ${street} zijn.`);
             }
         }
         
         startRadar(cityVal, nick, street);
-    }, () => alert("GPS REQUIRED FOR RADAR SCAN"), { enableHighAccuracy: true });
+    }, (err) => {
+        console.error(err);
+        alert("GPS REQUIRED FOR RADAR SCAN. Please enable location.");
+    }, { enableHighAccuracy: true });
 };
 
+// 5. وظيفة الرادار والدردشة
 function startRadar(zID, myNick, sID = null) {
     document.getElementById("login-ui").style.display = "none";
     document.getElementById("chat-ui").style.display = "flex";
+    
     const displayZone = sID ? sID : zID.replace(/_/g, ' ');
     const dbPath = sID ? `v6/${zID}/streets/${sID}` : `v6/${zID}`;
     
@@ -459,12 +458,15 @@ function startRadar(zID, myNick, sID = null) {
 
     set(onlineRef, serverTimestamp());
     onDisconnect(onlineRef).remove();
+    
     onValue(onlineList, (s) => {
-        document.getElementById("online-count").textContent = `👥 ${s.val() ? Object.keys(s.val()).length : 0} ONLINE`;
+        const count = s.val() ? Object.keys(s.val()).length : 0;
+        document.getElementById("online-count").textContent = `👥 ${count} ONLINE`;
     });
 
     const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const usageRef = ref(db, `v6_usage/${myNick}/${today}`);
+    
     onValue(usageRef, (s) => {
         document.getElementById("char-limit").textContent = `${33 - (s.val() || 0)} LEFT`;
     });
@@ -477,7 +479,13 @@ function startRadar(zID, myNick, sID = null) {
         get(usageRef).then((s) => {
             let used = s.val() || 0;
             if(used + txt.length > 33) return alert("LIMIT REACHED FOR TODAY");
-            push(msgRef, { n: myNick, m: txt, t: serverTimestamp() });
+            
+            push(msgRef, { 
+                n: myNick, 
+                m: txt, 
+                t: serverTimestamp() 
+            });
+            
             set(usageRef, used + txt.length);
             inp.value = "";
         });
@@ -485,27 +493,26 @@ function startRadar(zID, myNick, sID = null) {
 
     onChildAdded(msgRef, (s) => {
         const d = s.val();
+        
+        const displayTime = d.t ? new Date(d.t).toLocaleTimeString() : new Date().toLocaleTimeString();
         const radarBeep = new Audio('https://fsa.zapsplat.com/p_audio/zapsplat_multimedia_beep_short_high_pitched_004_102073.mp3');
-        radarBeep.volume = 1.0; 
+        radarBeep.volume = 0.3; 
         radarBeep.play().catch(() => {});
 
         const chatBox = document.getElementById("chat-box");
         chatBox.style.borderColor = "#fff";
-        chatBox.style.boxShadow = "0 0 20px var(--neon)";
-        setTimeout(() => {
-            chatBox.style.borderColor = "var(--neon)";
-            chatBox.style.boxShadow = "none";
-        }, 150);
+        setTimeout(() => { chatBox.style.borderColor = "var(--neon)"; }, 150);
 
         const div = document.createElement("div");
         div.className = "msg-line";
-        div.innerHTML = `<span class="timestamp">[${new Date(d.t).toLocaleTimeString()}]</span><br><b>${d.n}✅</b>: ${d.m}`;
+        div.innerHTML = `<span class="timestamp">[${displayTime}]</span><br><b>${d.n}✅</b>: ${d.m}`;
         
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 }
 
+// 6. تأثير الماتريكس (Matrix Background)
 const canvas = document.getElementById('matrix-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -524,10 +531,8 @@ const drops = Array(Math.floor(columns)).fill(1);
 function drawMatrix() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
     ctx.fillStyle = "#00ff41";
     ctx.font = fontSize + "px monospace";
-
     drops.forEach((y, i) => {
         const text = chars[Math.floor(Math.random() * chars.length)];
         ctx.fillText(text, i * fontSize, y * fontSize);
@@ -536,6 +541,7 @@ function drawMatrix() {
     });
 }
 setInterval(drawMatrix, 60);
+
 </script>
 </body>
 </html>
