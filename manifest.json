@@ -1,0 +1,26 @@
+{
+  "short_name": "NL.LIVE",
+  "name": "NL.LIVE | Live Chat Nederland",
+  "description": "Realtime chat platform voor alle steden in Nederland. Join jouw stad en chat live.",
+  "icons": [
+    {
+      "src": "121.GIF",
+      "type": "image/gif",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#000000",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#00ff41",
+  "shortcuts": [
+    {
+      "name": "Open Chat",
+      "short_name": "Chat",
+      "url": "./index.html",
+      "icons": [{ "src": "121.GIF", "sizes": "192x192" }]
+    }
+  ]
+}
