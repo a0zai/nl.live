@@ -81,27 +81,26 @@ body, html {
 }
 #theme-toggle {
     position: fixed;
-    top: 50%;
+    top: 20px;
     left: 50%;
-    transform: translate(-50%, -50%); 
-    padding: 15px 30px;
-    background: rgba(0, 0, 0, 0.8); /* خلفية سوداء شفافة ليكون واضحاً */
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background: transparent;
     color: #00ff41;
-    border: 2px solid #00ff41;
+    border: 1px solid #00ff41;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 18px; /* تكبير الخط قليلاً لأنه أصبح في المنتصف */
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
-    z-index: 100000; /* أعلى رقم ممكن ليظهر فوق اللوجو والكانفاس */
+    z-index: 100000;
     transition: 0.3s;
     text-transform: uppercase;
-    letter-spacing: 3px;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+    letter-spacing: 2px;
 }
 
 #theme-toggle:hover {
-    color: #000;
-    box-shadow: 0 0 30px #00ff41;
+    background: rgba(0, 255, 65, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
 }
 
 body.red-mode #theme-toggle {
@@ -110,9 +109,8 @@ body.red-mode #theme-toggle {
 }
 
 body.red-mode #theme-toggle:hover {
-    background: #ff0000;
-    color: #000;
-    box-shadow: 0 0 30px #ff0000;
+    background: rgba(255, 0, 0, 0.1);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
 }
 
 body::before {
