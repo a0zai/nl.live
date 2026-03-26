@@ -79,6 +79,48 @@ body, html {
     background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
     background-size: 100% 4px; 
 }
+#theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: transparent;
+    color: #00ff41;
+    border: 1px solid #00ff41;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 10001; /* فوق كل شيء */
+    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#theme-toggle:hover {
+    background: rgba(0, 255, 65, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+}
+
+body.red-mode .box {
+    border-color: #ff0000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    background: rgba(20, 0, 0, 0.85);
+}
+
+body.red-mode input, body.red-mode select {
+    border-color: rgba(255, 0, 0, 0.5);
+    color: #ff0000;
+}
+
+body.red-mode button:not(#sos-btn) {
+    background: #ff0000;
+}
+
+
+body.red-mode #theme-toggle:hover {
+    background: rgba(255, 0, 0, 0.1);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
 
 body::before {
     content: " ";
@@ -271,6 +313,7 @@ h2 {
 <body>
   <link rel="manifest" href="manifest.json">
 <canvas id="matrix-canvas"></canvas> <div class="container">
+   <button id="theme-toggle">SWITCH MODE</button>
    <img src="N.png" id="top-logo">
    <div id="terminal-console"></div>
 <div id="login-ui" class="box">
@@ -608,7 +651,22 @@ document.getElementById("back-btn").onclick = () => {
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
-}
+}const toggleBtn = document.getElementById('theme-toggle');
+let matrixColor = "#00ff41";
+
+toggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('red-mode');
+    
+    if (matrixColor === "#00ff41") {
+        matrixColor = "#ff0000"; // تحويل للأحمر
+        toggleBtn.innerText = "ALARM MODE";
+        document.getElementById('terminal-console').style.color = "rgba(255, 0, 0, 0.7)";
+    } else {
+        matrixColor = "#00ff41"; // العودة للأخضر
+        toggleBtn.innerText = "SAFE MODE";
+        document.getElementById('terminal-console').style.color = "rgba(0, 255, 65, 0.7)";
+    }
+});
 
 const canvas = document.getElementById('matrix-canvas');
 const ctx = canvas.getContext('2d');
@@ -624,12 +682,14 @@ function drawMatrix() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = fontSize + "px monospace";
+
     drops.forEach((y, i) => {
         const text = chars[Math.floor(Math.random() * chars.length)];
         ctx.fillStyle = "#ffffff"; 
         ctx.fillText(text, i * fontSize, y * fontSize);
-        ctx.fillStyle = "#00ff41"; 
+        ctx.fillStyle = matrixColor; 
         ctx.fillText(text, i * fontSize, (y - 1) * fontSize);
+
         if (y * fontSize > canvas.height && Math.random() > 0.975) {
             drops[i] = 0;
         }
