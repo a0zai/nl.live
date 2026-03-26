@@ -406,6 +406,7 @@ window.addEventListener('load', startTyping);
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getDatabase, ref, push, onChildAdded, serverTimestamp, onValue, onDisconnect, set, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
 const firebaseConfig = { 
     apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA", 
     projectId: "a0zai-56c3a", 
@@ -413,7 +414,9 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+const globalPresenceRef = ref(db, 'v6_presence'); 
+onValue(globalPresenceRef, (snapshot) => {
+    const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
     document.getElementById("viewer-count").textContent = count + 7; 
 });
 const nlCities = [
@@ -427,8 +430,6 @@ nlCities.sort((a, b) => a.name.localeCompare(b.name)).forEach(city => {
     opt.textContent = `${city.name.toUpperCase()} (${city.province})`;
     citySelect.appendChild(opt);
 });
-
-
 let savedNick = localStorage.getItem("a0z_nick_v6");
 if(savedNick) document.getElementById("nick-input").value = savedNick;
 const streetData = {
