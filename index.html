@@ -308,19 +308,11 @@ h2 {
 const consoleBox = document.getElementById('terminal-console');
 
 const scripts = [
-    "   `--------`       ",
-    "   `--------`       ",
-    "   `--------`       ",
-    "   `--------`       ",
-    "> GEBRUIKSVOORWAARDEN:",
-    "- Respecteer alle gebruikers op straat.",
-    "- Geen spam of ongepast gedrag.",
-    "- Volg de regels van de stadsserver.",
-    "- Misbruik wordt direct gerapporteerd.",
-    "- Privacy van data is strikt beveiligd.",
-    "---------------------------------",
-    "> Systeem gereed. Voer je naam in...",
-    "> Welkom bij de toekomst van nl.live."
+    "                  ",
+    "                  ",
+    "                  ",
+    "                  ",
+    ">Laat het zwerven."
 ];
 
 let lineIndex = 0;
@@ -612,7 +604,7 @@ document.getElementById("back-btn").onclick = () => {
         }
 
         const displayTime = d.t ? new Date(d.t).toLocaleTimeString() : new Date().toLocaleTimeString();
-        div.innerHTML = `<span class="timestamp">[${displayTime}]</span><br><b style="${d.isSOS ? 'color:#ff3333;' : ''}">${d.n}✅</b>: ${d.m}`;
+        div.innerHTML = `<span class="timestamp">[${displayTime}]</span><br><b style="${d.isSOS ? 'color:#ff3333;' : ''}">${d.n}</b>: ${d.m}`;
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
@@ -621,14 +613,14 @@ document.getElementById("back-btn").onclick = () => {
 const canvas = document.getElementById('matrix-canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-const chars = "01"; const fontSize = 33;
+const chars = "01"; const fontSize = 30;
 const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
 function drawMatrix() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#00ff41";
     drops.forEach((y, i) => {
         ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y * fontSize);
-        if (y * fontSize > canvas.height && Math.random() > 2) drops[i] = 0;
+        if (y * fontSize > canvas.height && Math.random() > 0.9) drops[i] = 0;
         drops[i]++;
     });
 }
