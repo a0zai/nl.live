@@ -339,8 +339,8 @@ h2 {
   <link rel="manifest" href="manifest.json">
    <div id="live-viewers">👁️‍🗨️ <span id="viewer-count">0</span> WATCHING</div>
     <button id="theme-toggle">🔰</button>
-<canvas id="matrix-canvas"></canvas> <div class="container">
    <img src="N.png" id="top-logo">
+<canvas id="matrix-canvas"></canvas> <div class="container">
    <div id="terminal-console"></div>
 <div id="login-ui" class="box">
     <input id="nick-input" placeholder="Naam..." maxlength="12">
@@ -413,13 +413,7 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-import { onValue, ref, set, onDisconnect, push } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-const globalConnectionsRef = ref(db, 'status/global_viewers');
-const myConnectionRef = push(ref(db, 'status/active_sessions'));
-set(myConnectionRef, true);
-onDisconnect(myConnectionRef).remove();
-onValue(ref(db, 'status/active_sessions'), (snapshot) => {
-    const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
     document.getElementById("viewer-count").textContent = count + 7; 
 });
 const nlCities = [
