@@ -69,16 +69,6 @@ body, html {
     color: var(--neon);
 }
 
-#matrix-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-    background-size: 100% 4px; 
-}
 #live-viewers {
     position: fixed;
     top: 20px;
@@ -838,36 +828,6 @@ toggleBtn.addEventListener('click', () => {
     }
 });
 
-const canvas = document.getElementById('matrix-canvas');
-const ctx = canvas.getContext('2d');
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const chars = "01"; 
-const fontSize = 15; 
-const columns = Math.floor(canvas.width / fontSize);
-const drops = Array(columns).fill(1);
-function drawMatrix() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font = fontSize + "px monospace";
-
-    drops.forEach((y, i) => {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillStyle = "#ffffff"; 
-        ctx.fillText(text, i * fontSize, y * fontSize);
-        ctx.fillStyle = matrixColor; 
-        ctx.fillText(text, i * fontSize, (y - 1) * fontSize);
-
-        if (y * fontSize > canvas.height && Math.random() > 0.975) {
-            drops[i] = 0;
-        }
-        drops[i]++;
-    });
-}
-
-setInterval(drawMatrix, 60);
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(() => console.log('PWA OK ✅'));
