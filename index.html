@@ -1,169 +1,479 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FULL LIVE</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NL.LIVE | RADAR & LIVE</title>
+    <style>
+        :root { --neon: #00ff41; --bg: #000; --red: #ff0000; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; overflow-x: hidden; }
+        .container { max-width: 500px; margin: auto; padding: 15px; }
+        .box { border: 1px solid var(--neon); padding: 15px; border-radius: 8px; background: #050505; margin-bottom: 10px; }
+        
+        /* Input Styles */
+        input, select, button { width: 100%; padding: 12px; margin: 5px 0; background: #000; border: 1px solid var(--neon); color: var(--neon); box-sizing: border-box; font-size: 14px; }
+        button { background: var(--neon); color: #000; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        button.sos { background: var(--red); color: white; border: none; }
+        
+        /* Radar & Stats */
+        .radar-header { display: flex; justify-content: space-between; font-size: 11px; border-bottom: 1px solid var(--neon); padding-bottom: 5px; margin-bottom: 10px; }
+        .dist-badge { color: yellow; }
 
-<style>
-body { background:#000; color:#0f0; font-family:monospace; padding:10px; }
-.box { border:1px solid #0f0; padding:10px; max-width:500px; margin:auto; }
-button, input { width:100%; padding:10px; margin:5px 0; background:#000; color:#0f0; border:1px solid #0f0; }
-video { width:100%; margin-top:10px; }
-</style>
+        /* Chat & Video */
+        #chat-box { height: 300px; overflow-y: auto; border: 1px solid #111; padding: 5px; margin-bottom: 10px; font-size: 13px; }
+        .msg { margin-bottom: 8px; border-left: 2px solid var(--neon); padding-left: 8px; }
+        .msg b { color: #fff; }
+        
+        #live-container { display: none; position: relative; border: 2px solid var(--red); margin-bottom: 10px; }
+        video, .remote-canvas { width: 100%; background: #222; display: block; }
+        .live-tag { position: absolute; top: 5px; left: 5px; background: var(--red); color: white; padding: 2px 6px; font-size: 10px; font-weight: bold; }
+        
+        .viewer-box { border: 1px solid var(--red); margin-top: 10px; position: relative; }
+        .viewer-name { position: absolute; bottom: 0; background: rgba(255,0,0,0.7); color: white; width: 100%; font-size: 10px; text-align: center; }
+    </style>
 </head>
-
 <body>
 
-<div id="login" class="box">
-<input id="nick" placeholder="USERNAME">
-<button onclick="start()">ENTER</button>
-</div>
+<div class="container">
+    <div id="login-ui" class="box">
+        <h2 style="text-align:center">NL.LIVE RADAR</h2>
+        <input id="nick-input" placeholder="NICKNAME" maxlength="12">
+        <select id="city-select" onchange="window.updateStreets(this.value)">
+            <option value="">-- KIES STAD --</option>
+            <option value="Doetinchem">DOETINCHEM</option>
+        </select>
+        <select id="street-select" style="display:none;"></select>
+        <button onclick="window.boot()">SCAN & ENTER</button>
+        <p style="font-size:10px; text-align:center;">* Je moet binnen 309m van de straat zijn.</p>
+    </div>
 
-<div id="app" class="box" style="display:none;">
+    <div id="app-ui" style="display:none;">
+        <div class="radar-header">
+            <span id="zone-txt">ZONE: -</span>
+            <span class="dist-badge" id="dist-txt">RADAR: OK</span>
+            <span id="view-count">0 VIEWERS</span>
+        </div>
 
-<button onclick="requestLive()">📡 Request Live</button>
+        <div id="live-container">
+            <div class="live-tag">YOU ARE LIVE</div>
+            <video id="v-preview" autoplay playsinline muted></video>
+            <canvas id="v-canvas" style="display:none;"></canvas>
+            <button onclick="window.stopLive()" style="background:var(--red); color:#white; border:none; margin:0;">STOP BROADCAST</button>
+        </div>
 
-<div id="adminPanel"></div>
+        <button id="cam-btn" onclick="window.startLive()">📷 GA LIVE IN DE BUURT</button>
+        <button class="sos" onclick="window.sendSOS()">🆘 SOS MELDING</button>
 
-<h3>Live</h3>
-<video id="video" autoplay playsinline></video>
+        <div id="chat-box"></div>
 
+        <div id="remote-streams"></div>
+
+        <div style="display:flex; gap:5px;">
+            <input id="msg-input" placeholder="Bericht..." maxlength="33" onkeydown="if(event.key==='Enter') window.sendMsg()">
+            <button onclick="window.sendMsg()" style="width:70px;">SND</button>
+        </div>
+    </div>
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getDatabase, ref, push, set, onValue, onChildAdded } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getDatabase, ref, push, onChildAdded, serverTimestamp, onValue, onDisconnect, set, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA",
-  projectId: "a0zai-56c3a",
-  databaseURL: "https://a0zai-56c3a-default-rtdb.europe-west1.firebasedatabase.app"
+const firebaseConfig = { 
+    apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA", 
+    projectId: "a0zai-56c3a", 
+    databaseURL: "https://a0zai-56c3a-default-rtdb.europe-west1.firebasedatabase.app" 
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
 
-let myUID, myNick;
-
-const ADMIN_UID = "PYbVPqlRZ3YwAhI0CHDAct5l3m83";
-
-const path = "live_system";
-signInAnonymously(auth).then(u => {
-  myUID = u.user.uid;
-});
-
-/* ---------- LOGIN ---------- */
-window.start = () => {
-  myNick = document.getElementById("nick").value;
-
-  document.getElementById("login").style.display = "none";
-  document.getElementById("app").style.display = "block";
-
-  if(myUID === ADMIN_UID){
-    listenRequests();
-  }
-
-  joinLive(); // أي مستخدم يشوف اللايف
-};
-
-/* ---------- REQUEST LIVE ---------- */
-window.requestLive = () => {
-  push(ref(db, path + "/requests"), {
-    uid: myUID,
-    nick: myNick,
-    status: "pending"
-  });
-
-  alert("Waiting approval...");
-};
-
-/* ---------- ADMIN ---------- */
-function listenRequests(){
-  onChildAdded(ref(db, path + "/requests"), (snap) => {
-    const r = snap.val();
-    const key = snap.key;
-
-    if(r.status !== "pending") return;
-
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <b>${r.nick}</b><br>
-      <button onclick="approve('${key}')">Approve</button>
-      <button onclick="reject('${key}')">Reject</button>
-    `;
-
-    document.getElementById("adminPanel").appendChild(div);
-  });
+// قاعدة بيانات الشوارع (أضف إحداثياتك هنا)
+const streetData = {
+    "Doetinchem": {
+  "2E LOOLAAN": { "lat": 51.9700, "lon": 6.3000 },
+  "ABDIJLAAN": { "lat": 51.9712, "lon": 6.2985 },
+  "ACACIALAAN": { "lat": 51.9721, "lon": 6.3021 },
+  "ADELAARSTRAAT": { "lat": 51.9650, "lon": 6.2920 },
+  "AIRBORNESTRAAT": { "lat": 51.9685, "lon": 6.2955 },
+  "ALFRED MOZERPLEIN": { "lat": 51.9678, "lon": 6.3002 },
+  "AMBACHTSTRAAT": { "lat": 51.9645, "lon": 6.3050 },
+  "AMPHIONSTRAAT": { "lat": 51.9660, "lon": 6.2935 },
+  "AMPERESTRAAT": { "lat": 51.9640, "lon": 6.3065 },
+  "ANEMOONSTRAAT": { "lat": 51.9710, "lon": 6.3040 },
+  "ANTILLENSTRAAT": { "lat": 51.9635, "lon": 6.2995 },
+  "ASTERSTRAAT": { "lat": 51.9705, "lon": 6.3030 },
+  "ATJEHSTRAAT": { "lat": 51.9638, "lon": 6.2980 },
+  "AURORAWEG": { "lat": 51.9689, "lon": 6.3070 },
+  "BADWEG": { "lat": 51.9725, "lon": 6.3010 },
+  "BARLHAMMERWEG": { "lat": 51.9750, "lon": 6.3100 },
+  "BARON VAN DIESTSTRAAT": { "lat": 51.9670, "lon": 6.2940 },
+  "BASTINGLAAN": { "lat": 51.9690, "lon": 6.2965 },
+  "BEDRIJVENWEG": { "lat": 51.9630, "lon": 6.3075 },
+  "BEETHOVENLAAN": { "lat": 51.9695, "lon": 6.2925 },
+  "BEGONIASTRAAT": { "lat": 51.9718, "lon": 6.3038 },
+  "BELDERSTRAAT": { "lat": 51.9668, "lon": 6.2915 },
+  "BERGLAAN": { "lat": 51.9680, "lon": 6.2948 },
+  "BERLAGELAAN": { "lat": 51.9692, "lon": 6.2972 },
+  "BEUKENHAGE": { "lat": 51.9701, "lon": 6.3008 },
+  "BEVRIJDINGSSTRAAT": { "lat": 51.9662, "lon": 6.2928 },
+  "BEZELHORSTWEG": { "lat": 51.9715, "lon": 6.3055 },
+  "BIESLOOKVELD": { "lat": 51.9730, "lon": 6.3080 },
+  "BILDERDIJKSTRAAT": { "lat": 51.9698, "lon": 6.2922 },
+  "BIZETLAAN": { "lat": 51.9690, "lon": 6.2930 },
+  "BLOEMERSSTRAAT": { "lat": 51.9665, "lon": 6.2960 },
+  "BLOKHUISLAAN": { "lat": 51.9722, "lon": 6.3060 },
+  "BODDENS HOSANGSTRAAT": { "lat": 51.9655, "lon": 6.2938 },
+  "BOEKWEITDREEF": { "lat": 51.9735, "lon": 6.3072 },
+  "BOENINKSTEEG": { "lat": 51.9650, "lon": 6.2975 },
+  "BOESMATE": { "lat": 51.9740, "lon": 6.3090 },
+  "BOLIESTRAAT": { "lat": 51.9652, "lon": 6.2898 },
+  "BORNEOSTRAAT": { "lat": 51.9642, "lon": 6.2970 },
+  "BOSSTRAAT": { "lat": 51.9688, "lon": 6.3015 },
+  "BRAAMTSEWEG": { "lat": 51.9755, "lon": 6.3120 },
+  "BRAMENHOF": { "lat": 51.9738, "lon": 6.3085 },
+  "BRASEM": { "lat": 51.9742, "lon": 6.3095 },
+  "BROEKSTRAAT": { "lat": 51.9690, "lon": 6.2935 },
+  "BROUWERSKAMP": { "lat": 51.9660, "lon": 6.2910 },
+  "BRUGGENWEG": { "lat": 51.9712, "lon": 6.3042 },
+  "BULTENSWEG": { "lat": 51.9728, "lon": 6.3068 },
+  "BUNDERHORST": { "lat": 51.9745, "lon": 6.3102 },
+  "BURGEMEESTER KEHRERSTRAAT": { "lat": 51.9695, "lon": 6.2928 },
+  "BURGEMEESTER TENKINKSTRAAT": { "lat": 51.9685, "lon": 6.2932 },
+  "BURGEMEESTER DE BRUIJNSTRAAT": { "lat": 51.9675, "lon": 6.2936 },
+  "BURGEMEESTER VAN NISPENSTRAAT": { "lat": 51.9668, "lon": 6.2940 },
+  "C MISSETSTRAAT": { "lat": 51.9645, "lon": 6.3055 },
+  "CAENSTRAAT": { "lat": 51.9692, "lon": 6.2920 },
+  "CALSLAAN": { "lat": 51.9700, "lon": 6.2950 },
+  "CANADAPARKLAAN": { "lat": 51.9710, "lon": 6.2975 },
+  "CATHARINASTRAAT": { "lat": 51.9657, "lon": 6.2912 },
+  "CATSSTRAAT": { "lat": 51.9690, "lon": 6.2938 },
+  "CELEBESSTRAAT": { "lat": 51.9640, "lon": 6.2985 },
+  "CHARLEY TOOROPSTRAAT": { "lat": 51.9705, "lon": 6.2968 },
+  "CHURCHILLSTRAAT": { "lat": 51.9688, "lon": 6.2945 },
+  "COLIJNLAAN": { "lat": 51.9698, "lon": 6.2955 },
+  "COOPSSTRAAT": { "lat": 51.9655, "lon": 6.2905 },
+  "CROUWELLSTRAAT": { "lat": 51.9650, "lon": 6.2915 },
+  "CURACAOSTRAAT": { "lat": 51.9635, "lon": 6.2990 },
+  "DE AALBES": { "lat": 51.9735, "lon": 6.3088 },
+  "DE BONGERD": { "lat": 51.9740, "lon": 6.3098 },
+  "DE ENK": { "lat": 51.9730, "lon": 6.3078 },
+  "DE GAARDE": { "lat": 51.9725, "lon": 6.3065 },
+  "DE HOVEN": { "lat": 51.9728, "lon": 6.3070 },
+  "DE HUET": { "lat": 51.9715, "lon": 6.3060 },
+  "DE KEMPEN": { "lat": 51.9732, "lon": 6.3082 },
+  "DE MEERPAAL": { "lat": 51.9745, "lon": 6.3105 },
+  "DE SCHANS": { "lat": 51.9720, "lon": 6.3058 },
+  "DE WHEEM": { "lat": 51.9738, "lon": 6.3095 },
+  "DE ZONNEBLOEM": { "lat": 51.9742, "lon": 6.3108 },
+  "DENNENLAAN": { "lat": 51.9705, "lon": 6.3025 },
+  "DOETINCHEMSEWEG": { "lat": 51.9760, "lon": 6.3125 },
+  "DOKTER BARDENHEUERSTRAAT": { "lat": 51.9680, "lon": 6.2942 },
+  "DOKTER HUBER NOODTSTRAAT": { "lat": 51.9675, "lon": 6.2930 },
+  "DOKTER SCHAEPMANSTRAAT": { "lat": 51.9688, "lon": 6.2925 },
+  "DOMINEE VAN DIJKSTRAAT": { "lat": 51.9692, "lon": 6.2918 },
+  "DONKERSGOOT": { "lat": 51.9748, "lon": 6.3112 },
+  "DOORNBOS": { "lat": 51.9735, "lon": 6.3089 },
+  "DR HOOFTLAAN": { "lat": 51.9695, "lon": 6.2935 },
+  "EDELWEISSSTRAAT": { "lat": 51.9715, "lon": 6.3035 },
+  "EIKENLAAN": { "lat": 51.9708, "lon": 6.3015 },
+  "ELZENLAAN": { "lat": 51.9712, "lon": 6.3022 },
+  "EMMASINGEL": { "lat": 51.9665, "lon": 6.2922 },
+  "ENERGIESTRAAT": { "lat": 51.9638, "lon": 6.3068 },
+  "ENGWEG": { "lat": 51.9752, "lon": 6.3115 },
+  "ERASMUSLAAN": { "lat": 51.9698, "lon": 6.2948 },
+  "ESDOORNLAAN": { "lat": 51.9710, "lon": 6.3028 },
+  "FABRIEKSSTRAAT": { "lat": 51.9645, "lon": 6.3045 },
+  "FOKKEMAWEG": { "lat": 51.9755, "lon": 6.3128 },
+  "FRANS HALSSTRAAT": { "lat": 51.9702, "lon": 6.2965 },
+  "GAARDERENSTRAAT": { "lat": 51.9735, "lon": 6.3092 },
+  "GAARDERHOF": { "lat": 51.9738, "lon": 6.3098 },
+  "GAARDEWEG": { "lat": 51.9725, "lon": 6.3075 },
+  "GASPELDOORNSTRAAT": { "lat": 51.9718, "lon": 6.3045 },
+  "GELEENSTRAAT": { "lat": 51.9640, "lon": 6.3005 },
+  "GENTIAANSTRAAT": { "lat": 51.9712, "lon": 6.3032 },
+  "GERANIUMSTRAAT": { "lat": 51.9715, "lon": 6.3038 },
+  "GOUDSBLOEMSTRAAT": { "lat": 51.9718, "lon": 6.3042 },
+  "GRUTSTRAAT": { "lat": 51.9655, "lon": 6.2890 },
+  "HAARWEG": { "lat": 51.9758, "lon": 6.3132 },
+  "HAGEN": { "lat": 51.9732, "lon": 6.3085 },
+  "HALSEWEG": { "lat": 51.9765, "lon": 6.3140 },
+  "HAMBURGERSTRAAT": { "lat": 51.9649, "lon": 6.2905 },
+  "HANZEWEG": { "lat": 51.9635, "lon": 6.3078 },
+  "HAVENSTRAAT": { "lat": 51.9658, "lon": 6.2955 },
+  "HEEZENSTRAAT": { "lat": 51.9646, "lon": 6.2920 },
+  "HEIDEWEG": { "lat": 51.9740, "lon": 6.3100 },
+  "HEKSELAAR": { "lat": 51.9735, "lon": 6.3095 },
+  "HELMHOLTZSTRAAT": { "lat": 51.9642, "lon": 6.3062 },
+  "HOFSTRAAT": { "lat": 51.9640, "lon": 6.2885 },
+  "HOGEWEG": { "lat": 51.9750, "lon": 6.3120 },
+  "HOLTERWEG": { "lat": 51.9768, "lon": 6.3145 },
+  "HOUTENSTRAAT": { "lat": 51.9650, "lon": 6.2940 },
+  "IBISSTRAAT": { "lat": 51.9725, "lon": 6.3055 },
+  "INDUSTRIEWEG": { "lat": 51.9630, "lon": 6.3085 },
+  "IRISSTRAAT": { "lat": 51.9718, "lon": 6.3048 },
+  "J F KENNEDYLAAN": { "lat": 51.9695, "lon": 6.2960 },
+  "JACHTLAAN": { "lat": 51.9745, "lon": 6.3115 },
+  "JACOB CATSSTRAAT": { "lat": 51.9690, "lon": 6.2938 },
+  "JACOB MARISSTRAAT": { "lat": 51.9705, "lon": 6.2962 },
+  "JAN STEENSTRAAT": { "lat": 51.9708, "lon": 6.2968 },
+  "JAN VERMEERSTRAAT": { "lat": 51.9702, "lon": 6.2972 },
+  "JASMĲNSTRAAT": { "lat": 51.9715, "lon": 6.3045 },
+  "JULIANAPLEIN": { "lat": 51.9668, "lon": 6.2920 },
+  "JULIANASTRAAT": { "lat": 51.9672, "lon": 6.2925 },
+  "KAPOENIESTRAAT": { "lat": 51.9658, "lon": 6.2882 },
+  "KARWIJZAAD": { "lat": 51.9738, "lon": 6.3090 },
+  "KASTANJELAAN": { "lat": 51.9705, "lon": 6.3018 },
+  "KEIZER KARELSTRAAT": { "lat": 51.9685, "lon": 6.2930 },
+  "KEMPENAERSTRAAT": { "lat": 51.9675, "lon": 6.2942 },
+  "KIEVITSTRAAT": { "lat": 51.9720, "lon": 6.3058 },
+  "KLOOSTERSTRAAT": { "lat": 51.9655, "lon": 6.2908 },
+  "KORENSTRAAT": { "lat": 51.9658, "lon": 6.2895 },
+  "KORTE HEERENSTRAAT": { "lat": 51.9652, "lon": 6.2892 },
+  "KRUISBERGSEWEG": { "lat": 51.9688, "lon": 6.2985 },
+  "KRUISSTRAAT": { "lat": 51.9650, "lon": 6.2900 },
+  "LAAN VAN SCHUYLENBURG": { "lat": 51.9715, "lon": 6.3052 },
+  "LANGEBERG": { "lat": 51.9742, "lon": 6.3102 },
+  "LANGE HEERENSTRAAT": { "lat": 51.9655, "lon": 6.2898 },
+  "LANGELOSTRAAT": { "lat": 51.9760, "lon": 6.3135 },
+  "LARIKSLAAN": { "lat": 51.9712, "lon": 6.3025 },
+  "LEEUWERIKSTRAAT": { "lat": 51.9722, "lon": 6.3052 },
+  "LEIDSEWEG": { "lat": 51.9755, "lon": 6.3125 },
+  "LINDELAAN": { "lat": 51.9708, "lon": 6.3012 },
+  "LOOILAND": { "lat": 51.9735, "lon": 6.3095 },
+  "LOOWEG": { "lat": 51.9748, "lon": 6.3110 },
+  "MAGNOLIASTRAAT": { "lat": 51.9718, "lon": 6.3040 },
+  "MARGRIETSTRAAT": { "lat": 51.9675, "lon": 6.2928 },
+  "MARKT": { "lat": 51.9653, "lon": 6.2893 },
+  "MEIDOORNSTRAAT": { "lat": 51.9715, "lon": 6.3032 },
+  "MELKWEG": { "lat": 51.9740, "lon": 6.3105 },
+  "MERELSTRAAT": { "lat": 51.9725, "lon": 6.3055 },
+  "MOLENSTRAAT": { "lat": 51.9662, "lon": 6.2915 },
+  "MONSEIGNEUR NOLENSSTRAAT": { "lat": 51.9680, "lon": 6.2935 },
+  "MOORSSTRAAT": { "lat": 51.9658, "lon": 6.2908 },
+  "NACHTEGAALSTRAAT": { "lat": 51.9728, "lon": 6.3058 },
+  "NIJVERHEIDSWEG": { "lat": 51.9632, "lon": 6.3088 },
+  "NIEUWSTAD": { "lat": 51.9660, "lon": 6.2905 },
+  "NIEUWEWEG": { "lat": 51.9750, "lon": 6.3122 },
+  "NOLENSLAAN": { "lat": 51.9682, "lon": 6.2938 },
+  "ORANJELAAN": { "lat": 51.9678, "lon": 6.2922 },
+  "ORCHIDEESTRAAT": { "lat": 51.9715, "lon": 6.3042 },
+  "PASTOOR VAN AERLEStraat": { "lat": 51.9685, "lon": 6.2932 },
+  "PAUL KRUGERSTRAAT": { "lat": 51.9692, "lon": 6.2945 },
+  "PLANTSOENSTRAAT": { "lat": 51.9668, "lon": 6.2918 },
+  "PRINS HENDRIKSTRAAT": { "lat": 51.9675, "lon": 6.2925 },
+  "RAADHUISSTRAAT": { "lat": 51.9662, "lon": 6.2900 },
+  "REIGERSTRAAT": { "lat": 51.9720, "lon": 6.3055 },
+  "RIETSTRAAT": { "lat": 51.9730, "lon": 6.3068 },
+  "ROZENSTRAAT": { "lat": 51.9712, "lon": 6.3035 },
+  "SCHOOLSTRAAT": { "lat": 51.9665, "lon": 6.2912 },
+  "SCHOUWBURGPLEIN": { "lat": 51.9658, "lon": 6.2905 },
+  "SIMONSPLEIN": { "lat": 51.9652, "lon": 6.2895 },
+  "SINGELWEG": { "lat": 51.9688, "lon": 6.2948 },
+  "SPORTWEG": { "lat": 51.9725, "lon": 6.3065 },
+  "TERBORGSEWEG": { "lat": 51.9660, "lon": 6.2950 },
+  "TOLLENSTRAAT": { "lat": 51.9690, "lon": 6.2932 },
+  "TRANSPORTWEG": { "lat": 51.9635, "lon": 6.3075 },
+  "VAN GOGHSTRAAT": { "lat": 51.9702, "lon": 6.2965 },
+  "VAN LIMBURG STIRUMSTRAAT": { "lat": 51.9685, "lon": 6.2930 },
+  "VARSSEVELDSEWEG": { "lat": 51.9655, "lon": 6.2968 },
+  "VIVALDILAAN": { "lat": 51.9695, "lon": 6.2928 },
+  "WALSTRAAT": { "lat": 51.9651, "lon": 6.2878 },
+  "WEEMSTRAAT": { "lat": 51.9735, "lon": 6.3095 },
+  "WILHELMINALAAN": { "lat": 51.9672, "lon": 6.2920 },
+  "WILGENSTRAAT": { "lat": 51.9710, "lon": 6.3025 },
+  "WEG NAAR GAANDEREN": { "lat": 51.9685, "lon": 6.3015 },
+  "WATERSTRAAT": { "lat": 51.9652, "lon": 6.2902 },
+  "WETERINGSTRAAT": { "lat": 51.9728, "lon": 6.3075 },
+  "VELDWEG": { "lat": 51.9748, "lon": 6.3118 },
+  "VELDHOF": { "lat": 51.9735, "lon": 6.3090 },
+  "VELDSTRAAT": { "lat": 51.9722, "lon": 6.3065 },
+  "TUINSTRAAT": { "lat": 51.9660, "lon": 6.2910 },
+  "TULPENSTRAAT": { "lat": 51.9718, "lon": 6.3045 },
+  "STATIONSSTRAAT": { "lat": 51.9668, "lon": 6.2935 },
+  "STATIONSPLEIN": { "lat": 51.9670, "lon": 6.2940 },
+  "ROERSTRAAT": { "lat": 51.9730, "lon": 6.3072 },
+  "RIVIERSTRAAT": { "lat": 51.9725, "lon": 6.3068 },
+  "PLATANENLAAN": { "lat": 51.9705, "lon": 6.3022 },
+  "POPULIERENLAAN": { "lat": 51.9712, "lon": 6.3028 },
+  "OLMENSTRAAT": { "lat": 51.9708, "lon": 6.3018 },
+  "OLIJFSTRAAT": { "lat": 51.9720, "lon": 6.3052 },
+  "MUNNIKENLAND": { "lat": 51.9745, "lon": 6.3108 },
+  "MIDDENWEG": { "lat": 51.9738, "lon": 6.3098 },
+  "KLEIN KWEKERIJPAD": { "lat": 51.9725, "lon": 6.3060 },
+  "KORTE BERGSTRAAT": { "lat": 51.9658, "lon": 6.2908 },
+  "HOGE AKKER": { "lat": 51.9742, "lon": 6.3102 },
+  "HET TANGH": { "lat": 51.9735, "lon": 6.3095 },
+  "GROENEWEG": { "lat": 51.9755, "lon": 6.3125 },
+  "GOORSTRAAT": { "lat": 51.9748, "lon": 6.3115 },
+  "ZANDSTRAAT": { "lat": 51.9658, "lon": 6.2915 },
+  "ZONNESTRAAT": { "lat": 51.9720, "lon": 6.3050 },
+  "ZUIDERLAAN": { "lat": 51.9695, "lon": 6.2955 },
+  "ZUIDERHAVEN": { "lat": 51.9648, "lon": 6.2965 },
+  "ZUIDERSTRAAT": { "lat": 51.9655, "lon": 6.2925 },
+  "ZUIDERKANAALDIJK": { "lat": 51.9638, "lon": 6.2988 },
+  "ACHTERSTRAAT": { "lat": 51.9650, "lon": 6.2900 },
+  "ACHTERHOF": { "lat": 51.9660, "lon": 6.2910 },
+  "AKKERSTRAAT": { "lat": 51.9730, "lon": 6.3075 },
+  "AKKERPAD": { "lat": 51.9735, "lon": 6.3080 },
+  "BEEKSTRAAT": { "lat": 51.9685, "lon": 6.2950 },
+  "BEEKPAD": { "lat": 51.9690, "lon": 6.2955 },
+  "BERGSTRAAT": { "lat": 51.9655, "lon": 6.2920 },
+  "BERGPAD": { "lat": 51.9660, "lon": 6.2925 },
+  "DIJKSTRAAT": { "lat": 51.9645, "lon": 6.2970 },
+  "DIJKPAD": { "lat": 51.9650, "lon": 6.2975 },
+  "ESSTRAAT": { "lat": 51.9720, "lon": 6.3060 },
+  "ESSENPAD": { "lat": 51.9725, "lon": 6.3065 },
+  "GRACHTSTRAAT": { "lat": 51.9652, "lon": 6.2898 },
+  "GRACHTPAD": { "lat": 51.9655, "lon": 6.2902 },
+  "HAVENPAD": { "lat": 51.9658, "lon": 6.2958 },
+  "HOFPAD": { "lat": 51.9645, "lon": 6.2888 },
+  "KAMPSTRAAT": { "lat": 51.9735, "lon": 6.3090 },
+  "KAMPPAD": { "lat": 51.9740, "lon": 6.3095 },
+  "LAANPAD": { "lat": 51.9715, "lon": 6.3035 },
+  "MOLENPAD": { "lat": 51.9665, "lon": 6.2918 },
+  "PADDEWEG": { "lat": 51.9755, "lon": 6.3128 },
+  "RIETPAD": { "lat": 51.9730, "lon": 6.3070 },
+  "STEENSTRAAT": { "lat": 51.9658, "lon": 6.2912 },
+  "STEENPAD": { "lat": 51.9662, "lon": 6.2915 },
+  "VELDPAD": { "lat": 51.9740, "lon": 6.3100 },
+  "WEIDESTRAAT": { "lat": 51.9735, "lon": 6.3095 },
+  "WEIDEPAD": { "lat": 51.9740, "lon": 6.3102 },
+  "ZANDPAD": { "lat": 51.9655, "lon": 6.2918 }
 }
-
-window.approve = (key) => {
-  set(ref(db, path + "/requests/" + key + "/status"), "approved");
-  startBroadcast();
 };
 
-window.reject = (key) => {
-  set(ref(db, path + "/requests/" + key + "/status"), "rejected");
-};
+let myNick, myPath, liveInt;
 
-/* ---------- BROADCAST ---------- */
-let pc;
-
-async function startBroadcast(){
-
-  const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
-
-  document.getElementById("video").srcObject = stream;
-
-  pc = new RTCPeerConnection({
-    iceServers:[{urls:"stun:stun.l.google.com:19302"}]
-  });
-
-  stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-
-  set(ref(db, path + "/webrtc/offer"), offer);
-
-  onValue(ref(db, path + "/webrtc/answer"), async (snap) => {
-    const answer = snap.val();
-    if(answer){
-      await pc.setRemoteDescription(answer);
+window.updateStreets = (city) => {
+    const s = document.getElementById("street-select");
+    s.innerHTML = '<option value="">-- KIES STRAAT --</option>';
+    if(streetData[city]) {
+        Object.keys(streetData[city]).forEach(st => {
+            let o = document.createElement("option"); o.value = st; o.textContent = st;
+            s.appendChild(o);
+        });
+        s.style.display = "block";
     }
-  });
+};
+
+window.boot = () => {
+    myNick = document.getElementById("nick-input").value.trim().toUpperCase();
+    const city = document.getElementById("city-select").value;
+    const street = document.getElementById("street-select").value;
+
+    if(!myNick || !city || !street) return alert("VUL ALLES IN!");
+
+    navigator.geolocation.getCurrentPosition((p) => {
+        const dist = calcDist(p.coords.latitude, p.coords.longitude, streetData[city][street].lat, streetData[city][street].lon);
+        
+        if(dist > 309) {
+            alert(`GEEN TOEGANG: Je bent ${Math.round(dist)}m verwijderd. (Max 309m)`);
+            return;
+        }
+
+        myPath = `v6/${city}/${street}`;
+        document.getElementById("login-ui").style.display = "none";
+        document.getElementById("app-ui").style.display = "block";
+        document.getElementById("zone-txt").textContent = street;
+        document.getElementById("dist-txt").textContent = `RADAR: ${Math.round(dist)}m`;
+        startSystem();
+    }, () => alert("GPS AAN ZETTEN!"), {enableHighAccuracy: true});
+};
+
+function startSystem() {
+    const msgRef = ref(db, `${myPath}/msgs`);
+    const onlineRef = ref(db, `${myPath}/online/${myNick}`);
+    const liveRef = ref(db, `${myPath}/lives/${myNick}`);
+
+    set(onlineRef, true);
+    onDisconnect(onlineRef).remove();
+    onDisconnect(liveRef).remove();
+
+    // 1. حساب المشاهدات (المتواجدين حالياً)
+    onValue(ref(db, `${myPath}/online`), s => {
+        document.getElementById("view-count").textContent = (s.exists() ? Object.keys(s.val()).length : 0) + " ONLINE";
+    });
+
+    // 2. استقبال الرسائل
+    onChildAdded(msgRef, s => {
+        const d = s.val();
+        const div = document.createElement("div");
+        div.className = "msg";
+        div.innerHTML = `<b>${d.n}:</b> ${d.m}`;
+        document.getElementById("chat-box").appendChild(div);
+        document.getElementById("chat-box").scrollTop = 99999;
+    });
+
+    // 3. رادار الكاميرات (مشاهدة الآخرين)
+    onValue(ref(db, `${myPath}/lives`), s => {
+        const container = document.getElementById("remote-streams");
+        if(!s.exists()) { container.innerHTML = ""; return; }
+        
+        const allLives = s.val();
+        Object.keys(allLives).forEach(user => {
+            if(user === myNick) return;
+            let img = document.getElementById("peer-" + user);
+            if(!img) {
+                const wrapper = document.createElement("div");
+                wrapper.className = "viewer-box";
+                img = document.createElement("img");
+                img.id = "peer-" + user;
+                img.style.width = "100%";
+                wrapper.innerHTML = `<div class="live-tag">LIVE: ${user}</div>`;
+                wrapper.appendChild(img);
+                container.appendChild(wrapper);
+            }
+            img.src = allLives[user].frame;
+        });
+    });
+
+    window.sendMsg = () => {
+        const i = document.getElementById("msg-input");
+        if(i.value) { push(msgRef, { n: myNick, m: i.value }); i.value = ""; }
+    };
+
+    window.sendSOS = () => {
+        push(msgRef, { n: "🚨 SOS", m: `${myNick} HEEFT HULP NODIG!` });
+    };
+
+    // 4. تشغيل الكاميرا الخاصة بك
+    window.startLive = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            document.getElementById("v-preview").srcObject = stream;
+            document.getElementById("live-container").style.display = "block";
+            
+            const canvas = document.getElementById("v-canvas");
+            const ctx = canvas.getContext('2d');
+
+            liveInt = setInterval(() => {
+                canvas.width = 300; canvas.height = 225;
+                ctx.drawImage(document.getElementById("v-preview"), 0, 0, canvas.width, canvas.height);
+                const data = canvas.toDataURL('image/jpeg', 0.4);
+                set(liveRef, { frame: data, t: Date.now() });
+            }, 800); // تحديث الفريم كل 0.8 ثانية
+
+        } catch (e) { alert("Camera Error"); }
+    };
+
+    window.stopLive = () => {
+        clearInterval(liveInt);
+        const v = document.getElementById("v-preview");
+        if(v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
+        document.getElementById("live-container").style.display = "none";
+        remove(liveRef);
+    };
 }
 
-/* ---------- VIEWER ---------- */
-async function joinLive(){
-
-  pc = new RTCPeerConnection({
-    iceServers:[{urls:"stun:stun.l.google.com:19302"}]
-  });
-
-  pc.ontrack = (e) => {
-    document.getElementById("video").srcObject = e.streams[0];
-  };
-
-  const offerSnap = await new Promise(resolve => {
-    onValue(ref(db, path + "/webrtc/offer"), resolve, { onlyOnce:true });
-  });
-
-  const offer = offerSnap.val();
-  if(!offer) return;
-
-  await pc.setRemoteDescription(offer);
-
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-
-  set(ref(db, path + "/webrtc/answer"), answer);
+function calcDist(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI/180;
+    const φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180;
+    const Δλ = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
-
 </script>
-
 </body>
 </html>
