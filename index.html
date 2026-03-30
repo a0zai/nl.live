@@ -325,18 +325,28 @@ h2 {
     <button onclick="boot()" style="margin-top: 15px;">Klik Chat</button>
 </div>
     <div id="chat-ui" class="box" style="display:none;"> <div style="display:flex; justify-content:space-between; font-size:11px; border-bottom: 1px solid var(--neon); padding-bottom: 5px; width: 100%;">
-      <button id="back-btn" style="background:transparent; color:var(--neon); border:1px solid var(--neon); padding:5px 10px; font-size:10px; margin-bottom:10px; width:fit-content;">⬅ BACK</button>
-            <span id="zone-display">Z: SCANNING</span>
-            <span id="online-count">nl 0 live</span>
-            <div id="global-video-container">
-            <div class="live-tag">📡 LIVE NL</div>
-            <video id="video-feed" autoplay muted playsinline></video>
-    <div id="live-location-name" style="font-size:10px; text-align:center; padding:2px;">SCANNING...</div>
+<div id="chat-ui" class="box" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; border-bottom: 1px solid var(--neon); padding-bottom: 5px; width: 100%; margin-bottom:10px;">
+        <button id="back-btn" style="background:transparent; color:var(--neon); border:1px solid var(--neon); padding:5px 10px; font-size:10px; cursor:pointer;">⬅ BACK</button>
+        <span id="zone-display">Z: SCANNING</span>
+        <span id="online-count">nl 0 live</span>
+    </div>
+
+    <div id="global-video-container" style="display:none; width:100%; border:1px solid #ff0000; margin-bottom:10px; position:relative; background:#000;">
+        <div class="live-tag" style="position:absolute; top:5px; left:5px; background:red; color:white; font-size:10px; padding:2px 5px; z-index:10;">📡 LIVE NL</div>
+        <video id="video-feed" autoplay muted playsinline style="width:100%; display:block;"></video>
+        <div id="live-location-name" style="font-size:10px; text-align:center; padding:5px; background:rgba(0,0,0,0.8); color:red;">SOURCE: SCANNING...</div>
+    </div>
+
+    <button id="sos-btn" onclick="window.sendSOS()" style="background: #ff3333; color: white; width: 100%; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 0 15px #ff3333; font-size: 14px; cursor:pointer;">🆘 SOS</button>
+
+    <div id="chat-box"></div>
+    <div id="char-limit">33 LEFT</div>
+    <div style="display:flex; gap:5px; width: 100%;">
+        <input id="msg-input" placeholder="TYPE..." maxlength="33" onkeydown="if(event.key==='Enter') window.send()">
+        <button onclick="window.send()" style="width:auto; white-space: nowrap;">SND</button>
+    </div>
 </div>
-        </div>
-        <button id="sos-btn" onclick="window.sendSOS()" style="background: #ff3333; color: white; width: 100%; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 0 15px #ff3333; font-size: 14px; animation: blink 1s infinite;">
-    🆘 
-</button>
 <style>
 @keyframes blink {
     0% { opacity: 1; }
