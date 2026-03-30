@@ -394,20 +394,16 @@ window.goBack = () => {
     }
 };
 
-
-
-
 function startSystem() {
     const msgRef = ref(db, `${myPath}/msgs`);
     const onlineRef = ref(db, `${myPath}/online/${myNick}`);
     const liveRef = ref(db, `${myPath}/lives/${myNick}`);
 
-    // تثبيت التواجد أونلاين
     set(onlineRef, true);
     onDisconnect(onlineRef).remove();
     onDisconnect(liveRef).remove();
 
-    // 1. نظام حذف الرسائل القديمة (أكبر من 14 ساعة) - الغلط كان هنا في الاستدعاء بدون تعريف
+    // 1. نظام حذف الرسائل التلقائي (14 ساعة)
     const fourteenHoursAgo = Date.now() - (14 * 60 * 60 * 1000);
     onValue(msgRef, (snap) => {
         if (snap.exists()) {
@@ -419,28 +415,28 @@ function startSystem() {
         }
     }, { onlyOnce: true });
 
-    // 2. نظام تحديث العداد وقائمة الأسماء
+    // 2. تحديث عداد المشاهدين وقائمة الأسماء
     onValue(ref(db, `${myPath}/online`), (s) => {
         const namesArea = document.getElementById("names-area");
         const users = s.exists() ? Object.keys(s.val()) : [];
-        document.getElementById("view-count").textContent = users.length + " ONLINE";
+        document.getElementById("view-count").textContent = users.length + " VIEWERS";
         if (namesArea) namesArea.textContent = users.join(", ");
     });
 
-    // 3. إرسال الرسالة مع إضافة التوقيت t
+    // 3. إرسال الرسائل
     window.sendMsg = () => {
         const i = document.getElementById("msg-input");
         if (i.value) { 
-            push(msgRef, { 
-                n: myNick, 
-                m: i.value, 
-                t: Date.now() 
-            }); 
+            push(msgRef, { n: myNick, m: i.value, t: Date.now() }); 
             i.value = ""; 
         }
     };
 
-    // 4. عرض الرسائل الجديدة
+    window.sendSOS = () => {
+        push(msgRef, { n: "🚨 SOS", m: `${myNick} HEEFT HULP NODIG!`, t: Date.now() });
+    };
+
+    // 4. عرض الرسائل
     onChildAdded(msgRef, s => {
         const d = s.val();
         const div = document.createElement("div");
@@ -450,11 +446,36 @@ function startSystem() {
         document.getElementById("chat-box").scrollTop = 99999;
     });
 
-    // 5. عرض لايفات الجيران
+    // 5. البث المباشر
+    window.startLive = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            document.getElementById("v-preview").srcObject = stream;
+            document.getElementById("live-container").style.display = "block";
+            const canvas = document.getElementById("v-canvas");
+            const ctx = canvas.getContext('2d');
+
+            liveInt = setInterval(() => {
+                canvas.width = 300; canvas.height = 225;
+                ctx.drawImage(document.getElementById("v-preview"), 0, 0, canvas.width, canvas.height);
+                const data = canvas.toDataURL('image/jpeg', 0.4);
+                set(liveRef, { frame: data, t: Date.now() });
+            }, 600); 
+        } catch (e) { alert("Camera Error"); }
+    };
+
+    window.stopLive = () => {
+        clearInterval(liveInt);
+        const v = document.getElementById("v-preview");
+        if(v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
+        document.getElementById("live-container").style.display = "none";
+        remove(liveRef);
+    };
+
+    // 6. عرض بث الجيران
     onValue(ref(db, `${myPath}/lives`), s => {
         const container = document.getElementById("remote-streams");
         if(!s.exists()) { container.innerHTML = ""; return; }
-        
         const allLives = s.val();
         Object.keys(allLives).forEach(user => {
             if(user === myNick) return;
@@ -472,38 +493,13 @@ function startSystem() {
             img.src = allLives[user].frame;
         });
     });
-
-
-    window.sendSOS = () => {
-        push(msgRef, { n: "🚨 SOS", m: `${myNick} HEEFT HULP NODIG!` });
-    };
-
-    window.startLive = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            document.getElementById("v-preview").srcObject = stream;
-            document.getElementById("live-container").style.display = "block";
-            const canvas = document.getElementById("v-canvas");
-            const ctx = canvas.getContext('2d');
-
-            liveInt = setInterval(() => {
-                canvas.width = 300; canvas.height = 225;
-                ctx.drawImage(document.getElementById("v-preview"), 0, 0, canvas.width, canvas.height);
-                const data = canvas.toDataURL('image/jpeg', 0.4);
-                set(liveRef, { frame: data, t: Date.now() });
-            }, 600); 
-
-        } catch (e) { alert("Camera Error"); }
-    };
-
-    window.stopLive = () => {
-        clearInterval(liveInt);
-        const v = document.getElementById("v-preview");
-        if(v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
-        document.getElementById("live-container").style.display = "none";
-        remove(liveRef);
-    };
 }
+
+// وظائف مساعدة (خارج startSystem)
+window.showViewers = () => {
+    const area = document.getElementById("viewers-list");
+    area.style.display = area.style.display === "none" ? "block" : "none";
+};
 
 function calcDist(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
@@ -514,41 +510,6 @@ function calcDist(lat1, lon1, lat2, lon2) {
     const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
-function cleanOldMessages() {
-    const msgRef = ref(db, `${myPath}/msgs`);
-    const fourteenHoursAgo = Date.now() - (14 * 60 * 60 * 1000);
-
-    onValue(msgRef, (snapshot) => {
-        if (snapshot.exists()) {
-            snapshot.forEach((child) => {
-                const msgTime = child.val().t || 0; 
-                if (msgTime < fourteenHoursAgo) {
-                    remove(ref(db, `${myPath}/msgs/${child.key}`));
-                }
-            });
-        }
-    }, { onlyOnce: true });
-}
-
-window.showViewers = () => {
-    const area = document.getElementById("viewers-list");
-    area.style.display = area.style.display === "none" ? "block" : "none";
-};
-
-function watchViewers() {
-    onValue(ref(db, `${myPath}/online`), (s) => {
-        const namesArea = document.getElementById("names-area");
-        if (s.exists()) {
-            const users = Object.keys(s.val());
-            namesArea.textContent = users.join(", "); // يعرض الأسماء بجانب بعضها
-            document.getElementById("view-count").textContent = users.length + " VIEWERS";
-        } else {
-            namesArea.textContent = "Geen kijkers";
-            document.getElementById("view-count").textContent = "0 VIEWERS";
-        }
-    });
-}
-
 </script>
 </body>
 </html>
