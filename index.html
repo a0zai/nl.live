@@ -1,853 +1,169 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NL.LIVE | Live Chat Nederland - Alle Steden Live</title>
-<meta name="description" content="NL.LIVE is de realtime chat hub voor alle steden in Nederland. Praat live met mensen in jouw stad zoals Amsterdam, Rotterdam, Utrecht en meer.">
-<meta name="keywords" content="nl live, nederland chat, live chat nederland, amsterdam live chat, rotterdam live chat, den haag chat, utrecht chat, eindhoven chat, groningen chat, tilburg chat, almere chat, breda chat, nijmegen chat, haarlem chat, arnhem chat, amersfoort chat, zwolle chat, leiden chat, dordrecht chat, venlo chat, delft chat, deventer chat, leeuwarden chat, alkmaar chat, helmond chat, heerlen chat, oss chat, hengelo chat, purmerend chat, roosendaal chat, schiedam chat, gouda chat, assen chat, bergen op zoom chat, capelle chat, veenendaal chat, zeist chat, den helder chat, middelburg chat, vlissingen chat, goes chat, terneuzen chat, kerkrade chat, weert chat, roermond chat">
-<meta name="robots" content="index, follow">
-<meta name="author" content="NL.LIVE">
-<meta name="theme-color" content="#000000">
-<link rel="canonical" href="https://nl.live/">
-<link rel="icon" type="image/gif" href="121.GIF">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="121.GIF">
-<link rel="apple-touch-icon" href="121.GIF">
-<meta property="og:type" content="website">
-<meta property="og:title" content="NL.LIVE - Live Chat Nederland">
-<meta property="og:description" content="Realtime chat platform voor alle steden in Nederland. Join jouw stad en chat live.">
-<meta property="og:image" content="https://nl.live/121.GIF">
-<meta property="og:url" content="https://nl.live/">
-<meta property="og:site_name" content="NL.LIVE">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NL.LIVE - Live Chat Nederland">
-<meta name="twitter:description" content="Praat live met mensen uit jouw stad in Nederland.">
-<meta name="twitter:image" content="https://nl.live/121.GIF">
-<meta name="geo.region" content="NL">
-<meta name="geo.placename" content="Netherlands">
-<link rel="preconnect" href="https://www.gstatic.com">
-<link rel="dns-prefetch" href="https://www.gstatic.com">
-   <link rel="manifest" href="manifest.json">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "NL.LIVE",
-  "url": "https://nl.live/",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://nl.live/?q={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "NL.LIVE",
-  "url": "https://nl.live/",
-  "logo": "https://nl.live/121.GIF"
-}
-</script>
+<title>FULL LIVE</title>
+
 <style>
-:root {
-    --neon: #00ff41;
-    --bg: #000000;
-    --neon-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41;
-}
-
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--bg);
-    font-family: 'Courier New', monospace;
-    color: var(--neon);
-}
-
-#matrix-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-    background-size: 100% 4px; 
-}
-#live-viewers {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 8px 15px;
-    background: rgba(0, 0, 0, 0.5);
-    color: #00ff41;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    z-index: 100000;
-    border-radius: 4px;
-    pointer-events: none; 
-    text-shadow: 0 0 5px #00ff41;
-}
-
-body.red-mode #live-viewers {
-    color: #ff0000;
-    border-color: rgba(255, 0, 0, 0.3);
-    text-shadow: 0 0 5px #ff0000;
-}
-
-#theme-toggle {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 20px;
-    background: rgba(0, 0, 0, 0.5);
-    color: #00ff41;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 100000;
-    transition: 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-#theme-toggle:hover {
-    background: rgba(0, 255, 65, 0.1);
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
-}
-
-body.red-mode #theme-toggle {
-    color: #ff0000;
-    border-color: #ff0000;
-}
-
-body.red-mode #theme-toggle:hover {
-    background: rgba(255, 0, 0, 0.1);
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
-}
-
-body::before {
-    content: " ";
-    display: block;
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%),
-                linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));
-    z-index: 100;
-    background-size: 100% 2px, 3px 100%;
-    pointer-events: none;
-}
-
-
-#terminal-console {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 350px;
-    min-height: 220px;
-    padding: 20px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 13px;
-    line-height: 1.6;
-    z-index: 9999;
-    border-radius: 4px;
-    color: rgba(255, 0, 0, 0.7); 
-    text-shadow: none;
-}
-
-#terminal-console::after {
-    content: "_";
-    color: rgba(255, 0, 0, 0.7);
-    animation: blink 0.8s step-end infinite;
-}
-
-@keyframes blink {
-    50% { opacity: 0.7; }
-}
-
-#top-logo {
-    position: fixed;
-    top: 39px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 309px;
-    height: auto;
-    z-index: 5;
-}
-
-.container {
-    position: relative;
-    z-index: 10; 
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; 
-    align-items: center;
-    height: 100vh;
-    width: 100%;
-    padding: 0 20px 78px 20px; 
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.box {
-    width: 90%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    background: #000000; 
-    border: 1px solid #00ff41;       
-    border-radius: 8px;
-    box-shadow: 0 0 25px rgba(0, 255, 65, 0.4); 
-    padding: 15px;
-    box-sizing: border-box;
-}
-
-#chat-ui {
-    position: relative;
-    background: #000000; 
-}
-
-#chat-ui::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background: #000000;
-}
-
-#chat-ui > * {
-    position: relative;
-    z-index: 1;
-}
-
-#chat-box {
-    flex: 1;
-    overflow-y: auto;
-    background-color: #000000 !important;
-    border: 1px solid var(--neon);
-    padding: 10px;
-    font-size: 11px;
-    scroll-behavior: smooth;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-}
-
-input, select {
-    width: 78%;
-    padding: 12px;
-    background: rgba(0, 20, 0, 0.7); 
-    border: 1px solid rgba(0, 255, 65, 0.5);
-    color: #00ff41;
-    font-family: inherit;
-    outline: none;
-    box-sizing: border-box;
-    transition: 0.3s;
-    border-radius: 4px; 
-}
-
-input:focus, select:focus {
-    border-color: #00ff41;
-    background: rgba(0, 40, 0, 0.8);
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.4), inset 0 0 10px rgba(0, 255, 65, 0.2);
-}
-
-select option {
-    background: #000;
-    color: #00ff41;
-}
-
-
-button {
-    padding: 12px;
-    background: var(--neon);
-    color: #000;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-button:hover {
-    filter: brightness(1.2);
-}
-
-button:active {
-    background: #fff;
-}
-
-.input-row {
-    display: flex;
-    gap: 5px;
-    width: 100%;
-    flex-shrink: 0;
-}
-
-.input-row input {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.msg-line {
-    margin-bottom: 10px;
-    background: rgba(0, 255, 65, 0.2);
-    padding-left: 8px;
-    word-break: break-all;
-}
-
-.timestamp {
-    font-size: 10px;
-    opacity: 0.6;
-}
-
-h2 {
-    text-align: center;
-    background: rgba(0, 255, 0, 1);
-    margin-bottom: 10px;
-    font-size: 1.5rem;
-}
-
-#char-limit {
-    color: #ff3333;
-    font-size: 9px;
-    text-align: right;
-    margin-bottom: 5px;
-}
-@keyframes glitch {
-    0% { transform: translate(0); }
-    20% { transform: translate(-5px, 5px); }
-    40% { transform: translate(-5px, -5px); }
-    60% { transform: translate(5px, 5px); }
-    80% { transform: translate(5px, -5px); }
-    100% { transform: translate(0); }
-}
-
-.denied-glitch {
-    animation: glitch 0.3s linear infinite;
-}
-
+body { background:#000; color:#0f0; font-family:monospace; padding:10px; }
+.box { border:1px solid #0f0; padding:10px; max-width:500px; margin:auto; }
+button, input { width:100%; padding:10px; margin:5px 0; background:#000; color:#0f0; border:1px solid #0f0; }
+video { width:100%; margin-top:10px; }
 </style>
 </head>
+
 <body>
-  <link rel="manifest" href="manifest.json">
-   <div id="live-viewers">👁️‍🗨️ <span id="viewer-count">0</span></div>
-    <button id="theme-toggle">🔰</button>
-   <canvas id="matrix-canvas"></canvas> <div class="container">
-   <img src="N.png" id="top-logo">
-   <div id="terminal-console"></div>
-<div id="login-ui" class="box">
-    <input id="nick-input" placeholder="Naam..." maxlength="12">
-    <select id="city-select" onchange="window.updateStreets(this.value)">
-        <option value="">-- Kies Stad --</option>
-    </select>
-    <select id="street-select" style="display:none; margin-top:10px; border: 1px solid #ff3333; color: #ff3333;">
-        <option value="">-- Kies Straat (RADAR ON) --</option>
-    </select>
-    <button onclick="boot()" style="margin-top: 15px;">Klik Chat</button>
-</div>
-    <div id="chat-ui" class="box" style="display:none;"> <div style="display:flex; justify-content:space-between; font-size:11px; border-bottom: 1px solid var(--neon); padding-bottom: 5px; width: 100%;">
-      <button id="back-btn" style="background:transparent; color:var(--neon); border:1px solid var(--neon); padding:5px 10px; font-size:10px; margin-bottom:10px; width:fit-content;">⬅ BACK</button>
-            <span id="zone-display">Z: SCANNING</span>
-            <span id="online-count">nl 0 live</span>
-        </div>
-        <button id="sos-btn" onclick="window.sendSOS()" style="background: #ff3333; color: white; width: 100%; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 0 15px #ff3333; font-size: 14px; animation: blink 1s infinite;">
-    🆘 
-</button>
-<style>
-@keyframes blink {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-</style>
-        <div id="chat-box"></div>
-        <div id="char-limit">33 LEFT</div>
-        <div style="display:flex; gap:5px; width: 100%;">
-            <input id="msg-input" placeholder="TYPE..." maxlength="33" onkeydown="if(event.key==='Enter') window.send()" style="margin-bottom:0;"> <button onclick="window.send()" style="width:auto; white-space: nowrap;">SND</button>
-        </div>
-    </div>
-</div>
-<script>
-const consoleBox = document.getElementById('terminal-console');
 
-const scripts = [
-    "                  ",
-    "                  ",
-    "                  ",
-    "                  ",
-    "                  ",
-    "                  ",
-    "                  "
-];
+<div id="login" class="box">
+<input id="nick" placeholder="USERNAME">
+<button onclick="start()">ENTER</button>
+</div>
 
-let lineIndex = 0;
-let charIndex = 0;
-function startTyping() {
-    if (lineIndex < scripts.length) {
-        let currentLine = scripts[lineIndex];
-        if (charIndex < currentLine.length) {
-            consoleBox.innerHTML += currentLine.charAt(charIndex);
-            charIndex++;
-            setTimeout(startTyping, 120); 
-        } else {
-            consoleBox.innerHTML += "<br>";
-            lineIndex++;
-            charIndex = 0;
-            setTimeout(startTyping, 1000); 
-        }
-    }
-}
-window.addEventListener('load', startTyping);
-</script>
+<div id="app" class="box" style="display:none;">
+
+<button onclick="requestLive()">📡 Request Live</button>
+
+<div id="adminPanel"></div>
+
+<h3>Live</h3>
+<video id="video" autoplay playsinline></video>
+
+</div>
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, serverTimestamp, onValue, onDisconnect, set, get } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
-const firebaseConfig = { 
-    apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA", 
-    projectId: "a0zai-56c3a", 
-    databaseURL: "https://a0zai-56c3a-default-rtdb.europe-west1.firebasedatabase.app" 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, onChildAdded } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA",
+  projectId: "a0zai-56c3a",
+  databaseURL: "https://a0zai-56c3a-default-rtdb.europe-west1.firebasedatabase.app"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const globalPresenceRef = ref(db, 'v6_presence'); 
-onValue(globalPresenceRef, (snapshot) => {
-    const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-    document.getElementById("viewer-count").textContent = count + 7; 
-});
-const nlCities = [
-  { name: "Doetinchem", province: "Gelderland" }
-];
+const auth = getAuth(app);
 
-const citySelect = document.getElementById("city-select");
-nlCities.sort((a, b) => a.name.localeCompare(b.name)).forEach(city => {
-    let opt = document.createElement("option");
-    opt.value = city.name.replace(/\s+/g, '_');
-    opt.textContent = `${city.name.toUpperCase()} (${city.province})`;
-    citySelect.appendChild(opt);
+let myUID, myNick;
+
+const ADMIN_UID = "PYbVPqlRZ3YwAhI0CHDAct5l3m83";
+
+const path = "live_system";
+signInAnonymously(auth).then(u => {
+  myUID = u.user.uid;
 });
-let savedNick = localStorage.getItem("a0z_nick_v6");
-if(savedNick) document.getElementById("nick-input").value = savedNick;
-const streetData = {
-    "Doetinchem": {
-  "2E LOOLAAN": { "lat": 51.9700, "lon": 6.3000 },
-  "ABDIJLAAN": { "lat": 51.9712, "lon": 6.2985 },
-  "ACACIALAAN": { "lat": 51.9721, "lon": 6.3021 },
-  "ADELAARSTRAAT": { "lat": 51.9650, "lon": 6.2920 },
-  "AIRBORNESTRAAT": { "lat": 51.9685, "lon": 6.2955 },
-  "ALFRED MOZERPLEIN": { "lat": 51.9678, "lon": 6.3002 },
-  "AMBACHTSTRAAT": { "lat": 51.9645, "lon": 6.3050 },
-  "AMPHIONSTRAAT": { "lat": 51.9660, "lon": 6.2935 },
-  "AMPERESTRAAT": { "lat": 51.9640, "lon": 6.3065 },
-  "ANEMOONSTRAAT": { "lat": 51.9710, "lon": 6.3040 },
-  "ANTILLENSTRAAT": { "lat": 51.9635, "lon": 6.2995 },
-  "ASTERSTRAAT": { "lat": 51.9705, "lon": 6.3030 },
-  "ATJEHSTRAAT": { "lat": 51.9638, "lon": 6.2980 },
-  "AURORAWEG": { "lat": 51.9689, "lon": 6.3070 },
-  "BADWEG": { "lat": 51.9725, "lon": 6.3010 },
-  "BARLHAMMERWEG": { "lat": 51.9750, "lon": 6.3100 },
-  "BARON VAN DIESTSTRAAT": { "lat": 51.9670, "lon": 6.2940 },
-  "BASTINGLAAN": { "lat": 51.9690, "lon": 6.2965 },
-  "BEDRIJVENWEG": { "lat": 51.9630, "lon": 6.3075 },
-  "BEETHOVENLAAN": { "lat": 51.9695, "lon": 6.2925 },
-  "BEGONIASTRAAT": { "lat": 51.9718, "lon": 6.3038 },
-  "BELDERSTRAAT": { "lat": 51.9668, "lon": 6.2915 },
-  "BERGLAAN": { "lat": 51.9680, "lon": 6.2948 },
-  "BERLAGELAAN": { "lat": 51.9692, "lon": 6.2972 },
-  "BEUKENHAGE": { "lat": 51.9701, "lon": 6.3008 },
-  "BEVRIJDINGSSTRAAT": { "lat": 51.9662, "lon": 6.2928 },
-  "BEZELHORSTWEG": { "lat": 51.9715, "lon": 6.3055 },
-  "BIESLOOKVELD": { "lat": 51.9730, "lon": 6.3080 },
-  "BILDERDIJKSTRAAT": { "lat": 51.9698, "lon": 6.2922 },
-  "BIZETLAAN": { "lat": 51.9690, "lon": 6.2930 },
-  "BLOEMERSSTRAAT": { "lat": 51.9665, "lon": 6.2960 },
-  "BLOKHUISLAAN": { "lat": 51.9722, "lon": 6.3060 },
-  "BODDENS HOSANGSTRAAT": { "lat": 51.9655, "lon": 6.2938 },
-  "BOEKWEITDREEF": { "lat": 51.9735, "lon": 6.3072 },
-  "BOENINKSTEEG": { "lat": 51.9650, "lon": 6.2975 },
-  "BOESMATE": { "lat": 51.9740, "lon": 6.3090 },
-  "BOLIESTRAAT": { "lat": 51.9652, "lon": 6.2898 },
-  "BORNEOSTRAAT": { "lat": 51.9642, "lon": 6.2970 },
-  "BOSSTRAAT": { "lat": 51.9688, "lon": 6.3015 },
-  "BRAAMTSEWEG": { "lat": 51.9755, "lon": 6.3120 },
-  "BRAMENHOF": { "lat": 51.9738, "lon": 6.3085 },
-  "BRASEM": { "lat": 51.9742, "lon": 6.3095 },
-  "BROEKSTRAAT": { "lat": 51.9690, "lon": 6.2935 },
-  "BROUWERSKAMP": { "lat": 51.9660, "lon": 6.2910 },
-  "BRUGGENWEG": { "lat": 51.9712, "lon": 6.3042 },
-  "BULTENSWEG": { "lat": 51.9728, "lon": 6.3068 },
-  "BUNDERHORST": { "lat": 51.9745, "lon": 6.3102 },
-  "BURGEMEESTER KEHRERSTRAAT": { "lat": 51.9695, "lon": 6.2928 },
-  "BURGEMEESTER TENKINKSTRAAT": { "lat": 51.9685, "lon": 6.2932 },
-  "BURGEMEESTER DE BRUIJNSTRAAT": { "lat": 51.9675, "lon": 6.2936 },
-  "BURGEMEESTER VAN NISPENSTRAAT": { "lat": 51.9668, "lon": 6.2940 },
-  "C MISSETSTRAAT": { "lat": 51.9645, "lon": 6.3055 },
-  "CAENSTRAAT": { "lat": 51.9692, "lon": 6.2920 },
-  "CALSLAAN": { "lat": 51.9700, "lon": 6.2950 },
-  "CANADAPARKLAAN": { "lat": 51.9710, "lon": 6.2975 },
-  "CATHARINASTRAAT": { "lat": 51.9657, "lon": 6.2912 },
-  "CATSSTRAAT": { "lat": 51.9690, "lon": 6.2938 },
-  "CELEBESSTRAAT": { "lat": 51.9640, "lon": 6.2985 },
-  "CHARLEY TOOROPSTRAAT": { "lat": 51.9705, "lon": 6.2968 },
-  "CHURCHILLSTRAAT": { "lat": 51.9688, "lon": 6.2945 },
-  "COLIJNLAAN": { "lat": 51.9698, "lon": 6.2955 },
-  "COOPSSTRAAT": { "lat": 51.9655, "lon": 6.2905 },
-  "CROUWELLSTRAAT": { "lat": 51.9650, "lon": 6.2915 },
-  "CURACAOSTRAAT": { "lat": 51.9635, "lon": 6.2990 },
-  "DE AALBES": { "lat": 51.9735, "lon": 6.3088 },
-  "DE BONGERD": { "lat": 51.9740, "lon": 6.3098 },
-  "DE ENK": { "lat": 51.9730, "lon": 6.3078 },
-  "DE GAARDE": { "lat": 51.9725, "lon": 6.3065 },
-  "DE HOVEN": { "lat": 51.9728, "lon": 6.3070 },
-  "DE HUET": { "lat": 51.9715, "lon": 6.3060 },
-  "DE KEMPEN": { "lat": 51.9732, "lon": 6.3082 },
-  "DE MEERPAAL": { "lat": 51.9745, "lon": 6.3105 },
-  "DE SCHANS": { "lat": 51.9720, "lon": 6.3058 },
-  "DE WHEEM": { "lat": 51.9738, "lon": 6.3095 },
-  "DE ZONNEBLOEM": { "lat": 51.9742, "lon": 6.3108 },
-  "DENNENLAAN": { "lat": 51.9705, "lon": 6.3025 },
-  "DOETINCHEMSEWEG": { "lat": 51.9760, "lon": 6.3125 },
-  "DOKTER BARDENHEUERSTRAAT": { "lat": 51.9680, "lon": 6.2942 },
-  "DOKTER HUBER NOODTSTRAAT": { "lat": 51.9675, "lon": 6.2930 },
-  "DOKTER SCHAEPMANSTRAAT": { "lat": 51.9688, "lon": 6.2925 },
-  "DOMINEE VAN DIJKSTRAAT": { "lat": 51.9692, "lon": 6.2918 },
-  "DONKERSGOOT": { "lat": 51.9748, "lon": 6.3112 },
-  "DOORNBOS": { "lat": 51.9735, "lon": 6.3089 },
-  "DR HOOFTLAAN": { "lat": 51.9695, "lon": 6.2935 },
-  "EDELWEISSSTRAAT": { "lat": 51.9715, "lon": 6.3035 },
-  "EIKENLAAN": { "lat": 51.9708, "lon": 6.3015 },
-  "ELZENLAAN": { "lat": 51.9712, "lon": 6.3022 },
-  "EMMASINGEL": { "lat": 51.9665, "lon": 6.2922 },
-  "ENERGIESTRAAT": { "lat": 51.9638, "lon": 6.3068 },
-  "ENGWEG": { "lat": 51.9752, "lon": 6.3115 },
-  "ERASMUSLAAN": { "lat": 51.9698, "lon": 6.2948 },
-  "ESDOORNLAAN": { "lat": 51.9710, "lon": 6.3028 },
-  "FABRIEKSSTRAAT": { "lat": 51.9645, "lon": 6.3045 },
-  "FOKKEMAWEG": { "lat": 51.9755, "lon": 6.3128 },
-  "FRANS HALSSTRAAT": { "lat": 51.9702, "lon": 6.2965 },
-  "GAARDERENSTRAAT": { "lat": 51.9735, "lon": 6.3092 },
-  "GAARDERHOF": { "lat": 51.9738, "lon": 6.3098 },
-  "GAARDEWEG": { "lat": 51.9725, "lon": 6.3075 },
-  "GASPELDOORNSTRAAT": { "lat": 51.9718, "lon": 6.3045 },
-  "GELEENSTRAAT": { "lat": 51.9640, "lon": 6.3005 },
-  "GENTIAANSTRAAT": { "lat": 51.9712, "lon": 6.3032 },
-  "GERANIUMSTRAAT": { "lat": 51.9715, "lon": 6.3038 },
-  "GOUDSBLOEMSTRAAT": { "lat": 51.9718, "lon": 6.3042 },
-  "GRUTSTRAAT": { "lat": 51.9655, "lon": 6.2890 },
-  "HAARWEG": { "lat": 51.9758, "lon": 6.3132 },
-  "HAGEN": { "lat": 51.9732, "lon": 6.3085 },
-  "HALSEWEG": { "lat": 51.9765, "lon": 6.3140 },
-  "HAMBURGERSTRAAT": { "lat": 51.9649, "lon": 6.2905 },
-  "HANZEWEG": { "lat": 51.9635, "lon": 6.3078 },
-  "HAVENSTRAAT": { "lat": 51.9658, "lon": 6.2955 },
-  "HEEZENSTRAAT": { "lat": 51.9646, "lon": 6.2920 },
-  "HEIDEWEG": { "lat": 51.9740, "lon": 6.3100 },
-  "HEKSELAAR": { "lat": 51.9735, "lon": 6.3095 },
-  "HELMHOLTZSTRAAT": { "lat": 51.9642, "lon": 6.3062 },
-  "HOFSTRAAT": { "lat": 51.9640, "lon": 6.2885 },
-  "HOGEWEG": { "lat": 51.9750, "lon": 6.3120 },
-  "HOLTERWEG": { "lat": 51.9768, "lon": 6.3145 },
-  "HOUTENSTRAAT": { "lat": 51.9650, "lon": 6.2940 },
-  "IBISSTRAAT": { "lat": 51.9725, "lon": 6.3055 },
-  "INDUSTRIEWEG": { "lat": 51.9630, "lon": 6.3085 },
-  "IRISSTRAAT": { "lat": 51.9718, "lon": 6.3048 },
-  "J F KENNEDYLAAN": { "lat": 51.9695, "lon": 6.2960 },
-  "JACHTLAAN": { "lat": 51.9745, "lon": 6.3115 },
-  "JACOB CATSSTRAAT": { "lat": 51.9690, "lon": 6.2938 },
-  "JACOB MARISSTRAAT": { "lat": 51.9705, "lon": 6.2962 },
-  "JAN STEENSTRAAT": { "lat": 51.9708, "lon": 6.2968 },
-  "JAN VERMEERSTRAAT": { "lat": 51.9702, "lon": 6.2972 },
-  "JASMĲNSTRAAT": { "lat": 51.9715, "lon": 6.3045 },
-  "JULIANAPLEIN": { "lat": 51.9668, "lon": 6.2920 },
-  "JULIANASTRAAT": { "lat": 51.9672, "lon": 6.2925 },
-  "KAPOENIESTRAAT": { "lat": 51.9658, "lon": 6.2882 },
-  "KARWIJZAAD": { "lat": 51.9738, "lon": 6.3090 },
-  "KASTANJELAAN": { "lat": 51.9705, "lon": 6.3018 },
-  "KEIZER KARELSTRAAT": { "lat": 51.9685, "lon": 6.2930 },
-  "KEMPENAERSTRAAT": { "lat": 51.9675, "lon": 6.2942 },
-  "KIEVITSTRAAT": { "lat": 51.9720, "lon": 6.3058 },
-  "KLOOSTERSTRAAT": { "lat": 51.9655, "lon": 6.2908 },
-  "KORENSTRAAT": { "lat": 51.9658, "lon": 6.2895 },
-  "KORTE HEERENSTRAAT": { "lat": 51.9652, "lon": 6.2892 },
-  "KRUISBERGSEWEG": { "lat": 51.9688, "lon": 6.2985 },
-  "KRUISSTRAAT": { "lat": 51.9650, "lon": 6.2900 },
-  "LAAN VAN SCHUYLENBURG": { "lat": 51.9715, "lon": 6.3052 },
-  "LANGEBERG": { "lat": 51.9742, "lon": 6.3102 },
-  "LANGE HEERENSTRAAT": { "lat": 51.9655, "lon": 6.2898 },
-  "LANGELOSTRAAT": { "lat": 51.9760, "lon": 6.3135 },
-  "LARIKSLAAN": { "lat": 51.9712, "lon": 6.3025 },
-  "LEEUWERIKSTRAAT": { "lat": 51.9722, "lon": 6.3052 },
-  "LEIDSEWEG": { "lat": 51.9755, "lon": 6.3125 },
-  "LINDELAAN": { "lat": 51.9708, "lon": 6.3012 },
-  "LOOILAND": { "lat": 51.9735, "lon": 6.3095 },
-  "LOOWEG": { "lat": 51.9748, "lon": 6.3110 },
-  "MAGNOLIASTRAAT": { "lat": 51.9718, "lon": 6.3040 },
-  "MARGRIETSTRAAT": { "lat": 51.9675, "lon": 6.2928 },
-  "MARKT": { "lat": 51.9653, "lon": 6.2893 },
-  "MEIDOORNSTRAAT": { "lat": 51.9715, "lon": 6.3032 },
-  "MELKWEG": { "lat": 51.9740, "lon": 6.3105 },
-  "MERELSTRAAT": { "lat": 51.9725, "lon": 6.3055 },
-  "MOLENSTRAAT": { "lat": 51.9662, "lon": 6.2915 },
-  "MONSEIGNEUR NOLENSSTRAAT": { "lat": 51.9680, "lon": 6.2935 },
-  "MOORSSTRAAT": { "lat": 51.9658, "lon": 6.2908 },
-  "NACHTEGAALSTRAAT": { "lat": 51.9728, "lon": 6.3058 },
-  "NIJVERHEIDSWEG": { "lat": 51.9632, "lon": 6.3088 },
-  "NIEUWSTAD": { "lat": 51.9660, "lon": 6.2905 },
-  "NIEUWEWEG": { "lat": 51.9750, "lon": 6.3122 },
-  "NOLENSLAAN": { "lat": 51.9682, "lon": 6.2938 },
-  "ORANJELAAN": { "lat": 51.9678, "lon": 6.2922 },
-  "ORCHIDEESTRAAT": { "lat": 51.9715, "lon": 6.3042 },
-  "PASTOOR VAN AERLEStraat": { "lat": 51.9685, "lon": 6.2932 },
-  "PAUL KRUGERSTRAAT": { "lat": 51.9692, "lon": 6.2945 },
-  "PLANTSOENSTRAAT": { "lat": 51.9668, "lon": 6.2918 },
-  "PRINS HENDRIKSTRAAT": { "lat": 51.9675, "lon": 6.2925 },
-  "RAADHUISSTRAAT": { "lat": 51.9662, "lon": 6.2900 },
-  "REIGERSTRAAT": { "lat": 51.9720, "lon": 6.3055 },
-  "RIETSTRAAT": { "lat": 51.9730, "lon": 6.3068 },
-  "ROZENSTRAAT": { "lat": 51.9712, "lon": 6.3035 },
-  "SCHOOLSTRAAT": { "lat": 51.9665, "lon": 6.2912 },
-  "SCHOUWBURGPLEIN": { "lat": 51.9658, "lon": 6.2905 },
-  "SIMONSPLEIN": { "lat": 51.9652, "lon": 6.2895 },
-  "SINGELWEG": { "lat": 51.9688, "lon": 6.2948 },
-  "SPORTWEG": { "lat": 51.9725, "lon": 6.3065 },
-  "TERBORGSEWEG": { "lat": 51.9660, "lon": 6.2950 },
-  "TOLLENSTRAAT": { "lat": 51.9690, "lon": 6.2932 },
-  "TRANSPORTWEG": { "lat": 51.9635, "lon": 6.3075 },
-  "VAN GOGHSTRAAT": { "lat": 51.9702, "lon": 6.2965 },
-  "VAN LIMBURG STIRUMSTRAAT": { "lat": 51.9685, "lon": 6.2930 },
-  "VARSSEVELDSEWEG": { "lat": 51.9655, "lon": 6.2968 },
-  "VIVALDILAAN": { "lat": 51.9695, "lon": 6.2928 },
-  "WALSTRAAT": { "lat": 51.9651, "lon": 6.2878 },
-  "WEEMSTRAAT": { "lat": 51.9735, "lon": 6.3095 },
-  "WILHELMINALAAN": { "lat": 51.9672, "lon": 6.2920 },
-  "WILGENSTRAAT": { "lat": 51.9710, "lon": 6.3025 },
-  "WEG NAAR GAANDEREN": { "lat": 51.9685, "lon": 6.3015 },
-  "WATERSTRAAT": { "lat": 51.9652, "lon": 6.2902 },
-  "WETERINGSTRAAT": { "lat": 51.9728, "lon": 6.3075 },
-  "VELDWEG": { "lat": 51.9748, "lon": 6.3118 },
-  "VELDHOF": { "lat": 51.9735, "lon": 6.3090 },
-  "VELDSTRAAT": { "lat": 51.9722, "lon": 6.3065 },
-  "TUINSTRAAT": { "lat": 51.9660, "lon": 6.2910 },
-  "TULPENSTRAAT": { "lat": 51.9718, "lon": 6.3045 },
-  "STATIONSSTRAAT": { "lat": 51.9668, "lon": 6.2935 },
-  "STATIONSPLEIN": { "lat": 51.9670, "lon": 6.2940 },
-  "ROERSTRAAT": { "lat": 51.9730, "lon": 6.3072 },
-  "RIVIERSTRAAT": { "lat": 51.9725, "lon": 6.3068 },
-  "PLATANENLAAN": { "lat": 51.9705, "lon": 6.3022 },
-  "POPULIERENLAAN": { "lat": 51.9712, "lon": 6.3028 },
-  "OLMENSTRAAT": { "lat": 51.9708, "lon": 6.3018 },
-  "OLIJFSTRAAT": { "lat": 51.9720, "lon": 6.3052 },
-  "MUNNIKENLAND": { "lat": 51.9745, "lon": 6.3108 },
-  "MIDDENWEG": { "lat": 51.9738, "lon": 6.3098 },
-  "KLEIN KWEKERIJPAD": { "lat": 51.9725, "lon": 6.3060 },
-  "KORTE BERGSTRAAT": { "lat": 51.9658, "lon": 6.2908 },
-  "HOGE AKKER": { "lat": 51.9742, "lon": 6.3102 },
-  "HET TANGH": { "lat": 51.9735, "lon": 6.3095 },
-  "GROENEWEG": { "lat": 51.9755, "lon": 6.3125 },
-  "GOORSTRAAT": { "lat": 51.9748, "lon": 6.3115 },
-  "ZANDSTRAAT": { "lat": 51.9658, "lon": 6.2915 },
-  "ZONNESTRAAT": { "lat": 51.9720, "lon": 6.3050 },
-  "ZUIDERLAAN": { "lat": 51.9695, "lon": 6.2955 },
-  "ZUIDERHAVEN": { "lat": 51.9648, "lon": 6.2965 },
-  "ZUIDERSTRAAT": { "lat": 51.9655, "lon": 6.2925 },
-  "ZUIDERKANAALDIJK": { "lat": 51.9638, "lon": 6.2988 },
-  "ACHTERSTRAAT": { "lat": 51.9650, "lon": 6.2900 },
-  "ACHTERHOF": { "lat": 51.9660, "lon": 6.2910 },
-  "AKKERSTRAAT": { "lat": 51.9730, "lon": 6.3075 },
-  "AKKERPAD": { "lat": 51.9735, "lon": 6.3080 },
-  "BEEKSTRAAT": { "lat": 51.9685, "lon": 6.2950 },
-  "BEEKPAD": { "lat": 51.9690, "lon": 6.2955 },
-  "BERGSTRAAT": { "lat": 51.9655, "lon": 6.2920 },
-  "BERGPAD": { "lat": 51.9660, "lon": 6.2925 },
-  "DIJKSTRAAT": { "lat": 51.9645, "lon": 6.2970 },
-  "DIJKPAD": { "lat": 51.9650, "lon": 6.2975 },
-  "ESSTRAAT": { "lat": 51.9720, "lon": 6.3060 },
-  "ESSENPAD": { "lat": 51.9725, "lon": 6.3065 },
-  "GRACHTSTRAAT": { "lat": 51.9652, "lon": 6.2898 },
-  "GRACHTPAD": { "lat": 51.9655, "lon": 6.2902 },
-  "HAVENPAD": { "lat": 51.9658, "lon": 6.2958 },
-  "HOFPAD": { "lat": 51.9645, "lon": 6.2888 },
-  "KAMPSTRAAT": { "lat": 51.9735, "lon": 6.3090 },
-  "KAMPPAD": { "lat": 51.9740, "lon": 6.3095 },
-  "LAANPAD": { "lat": 51.9715, "lon": 6.3035 },
-  "MOLENPAD": { "lat": 51.9665, "lon": 6.2918 },
-  "PADDEWEG": { "lat": 51.9755, "lon": 6.3128 },
-  "RIETPAD": { "lat": 51.9730, "lon": 6.3070 },
-  "STEENSTRAAT": { "lat": 51.9658, "lon": 6.2912 },
-  "STEENPAD": { "lat": 51.9662, "lon": 6.2915 },
-  "VELDPAD": { "lat": 51.9740, "lon": 6.3100 },
-  "WEIDESTRAAT": { "lat": 51.9735, "lon": 6.3095 },
-  "WEIDEPAD": { "lat": 51.9740, "lon": 6.3102 },
-  "ZANDPAD": { "lat": 51.9655, "lon": 6.2918 }
-}
+
+/* ---------- LOGIN ---------- */
+window.start = () => {
+  myNick = document.getElementById("nick").value;
+
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  if(myUID === ADMIN_UID){
+    listenRequests();
+  }
+
+  joinLive(); // أي مستخدم يشوف اللايف
 };
 
-function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; 
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c * 1000; 
+/* ---------- REQUEST LIVE ---------- */
+window.requestLive = () => {
+  push(ref(db, path + "/requests"), {
+    uid: myUID,
+    nick: myNick,
+    status: "pending"
+  });
+
+  alert("Waiting approval...");
+};
+
+/* ---------- ADMIN ---------- */
+function listenRequests(){
+  onChildAdded(ref(db, path + "/requests"), (snap) => {
+    const r = snap.val();
+    const key = snap.key;
+
+    if(r.status !== "pending") return;
+
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <b>${r.nick}</b><br>
+      <button onclick="approve('${key}')">Approve</button>
+      <button onclick="reject('${key}')">Reject</button>
+    `;
+
+    document.getElementById("adminPanel").appendChild(div);
+  });
 }
 
-window.updateStreets = (cityVal) => {
-    const city = cityVal.replace(/_/g, ' ');
-    const sSelect = document.getElementById("street-select");
-    if (streetData[city]) {
-        sSelect.innerHTML = '<option value="">-- Kies Straat (RADAR ON) --</option>';
-        Object.keys(streetData[city]).forEach(s => {
-            let opt = document.createElement("option");
-            opt.value = s;
-            opt.textContent = s;
-            sSelect.appendChild(opt);
-        });
-        sSelect.style.display = "block";
-    } else {
-        sSelect.style.display = "none";
-        sSelect.value = "";
+window.approve = (key) => {
+  set(ref(db, path + "/requests/" + key + "/status"), "approved");
+  startBroadcast();
+};
+
+window.reject = (key) => {
+  set(ref(db, path + "/requests/" + key + "/status"), "rejected");
+};
+
+/* ---------- BROADCAST ---------- */
+let pc;
+
+async function startBroadcast(){
+
+  const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+
+  document.getElementById("video").srcObject = stream;
+
+  pc = new RTCPeerConnection({
+    iceServers:[{urls:"stun:stun.l.google.com:19302"}]
+  });
+
+  stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  set(ref(db, path + "/webrtc/offer"), offer);
+
+  onValue(ref(db, path + "/webrtc/answer"), async (snap) => {
+    const answer = snap.val();
+    if(answer){
+      await pc.setRemoteDescription(answer);
     }
-};
+  });
+}
 
-window.boot = () => {
-    if ('Notification' in window) { Notification.requestPermission(); }
-    const nickInput = document.getElementById("nick-input");
-    const nick = nickInput.value.trim().toUpperCase();
-    const cityVal = document.getElementById("city-select").value;
-    const cityName = cityVal.replace(/_/g, ' ');
-    const street = document.getElementById("street-select").value;
-    if(!/^[A-Z0-9]+$/.test(nick)) return alert("INVALID ID (A-Z, 0-9)");
-    if(!cityVal) return alert("SELECT CITY");
-    if (streetData[cityName] && !street) return alert("SELECT STREET");
+/* ---------- VIEWER ---------- */
+async function joinLive(){
 
-    localStorage.setItem("a0z_nick_v6", nick);
+  pc = new RTCPeerConnection({
+    iceServers:[{urls:"stun:stun.l.google.com:19302"}]
+  });
 
-    navigator.geolocation.getCurrentPosition((p) => {
-        const uLat = p.coords.latitude;
-        const uLon = p.coords.longitude;
+  pc.ontrack = (e) => {
+    document.getElementById("video").srcObject = e.streams[0];
+  };
 
-        if (street && streetData[cityName] && streetData[cityName][street]) {
-            const target = streetData[cityName][street];
-            const dist = getDistance(uLat, uLon, target.lat, target.lon);
-            if (dist > 309) {
-                document.body.classList.add('glitch-active');
-                setTimeout(() => {
-                    alert(`ACCESS DENIED: Je bent ${Math.round(dist)}m verwijderd.`);
-                    document.body.classList.remove('glitch-active');
-                }, 100); 
-                return; 
-            }
-        }
-        
-        startRadar(cityVal, nick, street);
+  const offerSnap = await new Promise(resolve => {
+    onValue(ref(db, path + "/webrtc/offer"), resolve, { onlyOnce:true });
+  });
 
-    }, (err) => {
-        alert("GPS REQUIRED.");
-    }, { enableHighAccuracy: true });
-};
-function startRadar(zID, myNick, sID = null) {
-    document.getElementById("login-ui").style.display = "none";
-    document.getElementById("chat-ui").style.display = "flex";
-    
-    const displayZone = sID ? sID : zID.replace(/_/g, ' ');
-    const dbPath = sID ? `v6/${zID}/streets/${sID}` : `v6/${zID}`;
-    document.getElementById("zone-display").textContent = `Z: ${displayZone}`;
+  const offer = offerSnap.val();
+  if(!offer) return;
 
-    const msgRef = ref(db, `${dbPath}/msgs`);
-    const onlineList = ref(db, `${dbPath}/online`);
-    const onlineRef = ref(db, `${dbPath}/online/${myNick}`);
+  await pc.setRemoteDescription(offer);
 
-    set(onlineRef, serverTimestamp());
-    onDisconnect(onlineRef).remove();
-    
-    onValue(onlineList, (s) => {
-        const count = s.val() ? Object.keys(s.val()).length : 0;
-        document.getElementById("online-count").textContent = `👥 ${count} ONLINE`;
-    });
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
 
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const usageRef = ref(db, `v6_usage/${myNick}/${today}`);
-    
-    onValue(usageRef, (s) => {
-        document.getElementById("char-limit").textContent = `${33 - (s.val() || 0)} LEFT`;
-    });
-document.getElementById("top-logo").style.display = "none";
-    window.send = () => {
-        const inp = document.getElementById("msg-input");
-        const txt = inp.value.trim();
-        if(!txt) return;
-        get(usageRef).then((s) => {
-            let used = s.val() || 0;
-            if(used + txt.length > 99) return alert("LIMIT REACHED");
-            push(msgRef, { n: myNick, m: txt, t: serverTimestamp() });
-            set(usageRef, used + txt.length);
-            inp.value = "";
-        });
-    };
-
-    window.sendSOS = () => {
-        if(!confirm("⚠️ SEND SOS TO NEIGHBORS?")) return;
-        navigator.geolocation.getCurrentPosition((p) => {
-            const mapUrl = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-            push(msgRef, { n: `🚨 SOS: ${myNick}`, m: `HULP NODIG! Locatie: ${mapUrl}`, t: serverTimestamp(), isSOS: true });
-        });
-    };
-document.getElementById("back-btn").onclick = () => {
-    set(onlineRef, null); 
-    document.getElementById("chat-ui").style.display = "none";
-    document.getElementById("login-ui").style.display = "flex";
-};
-
-    onChildAdded(msgRef, (s) => {
-        const d = s.val();
-        const chatBox = document.getElementById("chat-box");
-        const div = document.createElement("div");
-        div.className = "msg-line";
-
-        if (d.isSOS) {
-            const sosAlarm = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
-            sosAlarm.play().catch(() => {});
-            div.style.background = "rgba(255, 0, 0, 0.2)";
-            div.style.borderLeft = "4px solid #ff3333";
-        } else {
-            new Audio('https://fsa.zapsplat.com/p_audio/zapsplat_multimedia_beep_short_high_pitched_004_102073.mp3').play().catch(() => {});
-        }
-
-        const displayTime = d.t ? new Date(d.t).toLocaleTimeString() : new Date().toLocaleTimeString();
-        div.innerHTML = `<span class="timestamp">[${displayTime}]</span><br><b style="${d.isSOS ? 'color:#ff3333;' : ''}">${d.n}</b>: ${d.m}`;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
-}const toggleBtn = document.getElementById('theme-toggle');
-let matrixColor = "#00ff41";
-
-toggleBtn.addEventListener('click', () => {
-    document.body.classList.toggle('red-mode');
-    
-    if (matrixColor === "#00ff41") {
-        matrixColor = "#ff0000"; 
-        toggleBtn.innerText = "ALARM MODE";
-        document.getElementById('terminal-console').style.color = "rgba(255, 0, 0, 0.7)";
-    } else {
-        matrixColor = "#00ff41";
-        toggleBtn.innerText = "SAFE MODE";
-        document.getElementById('terminal-console').style.color = "rgba(0, 255, 65, 0.7)";
-    }
-});
-
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(() => console.log('PWA OK ✅'));
+  set(ref(db, path + "/webrtc/answer"), answer);
 }
 
 </script>
+
 </body>
 </html>
