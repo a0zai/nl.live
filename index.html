@@ -10,8 +10,6 @@
         
         .container { max-width: 500px; margin: auto; padding: 10px; box-sizing: border-box; }
         .box { border: 1px solid var(--neon); padding: 15px; border-radius: 8px; background: #050505; margin-bottom: 10px; }
-        
-        /* تحسين الهيدر لعدم تداخل النصوص */
         .radar-header { 
             display: flex; 
             justify-content: space-between; 
@@ -24,8 +22,6 @@
         }
         #zone-txt { color: var(--neon); font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .dist-badge { color: yellow; min-width: fit-content; }
-
-        /* نظام الأزرار الجديد */
         .action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -89,7 +85,7 @@
 <div class="container">
     <div id="login-ui" class="box">
         <h2 style="text-align:center">NL LIVE</h2>
-        <input id="nick-input" placeholder="NICKNAME" maxlength="12">
+        <input id="nick-input" placeholder="D-ID (EX: NL-772)" maxlength="12">
         <select id="city-select" onchange="window.updateStreets(this.value)">
             <option value="">-- KIES STAD --</option>
             <option value="Doetinchem">DOETINCHEM</option>
@@ -326,7 +322,6 @@ const streetData = {
   "ROZENSTRAAT": { "lat": 51.9712, "lon": 6.3035 },
   "SCHOOLSTRAAT": { "lat": 51.9665, "lon": 6.2912 },
   "SCHOUWBURGPLEIN": { "lat": 51.9658, "lon": 6.2905 },
-  "SEINHORSTSTRAAT": { "lat": 51.97343, "lon": 6.30138 },
   "SIMONSPLEIN": { "lat": 51.9652, "lon": 6.2895 },
   "SINGELWEG": { "lat": 51.9688, "lon": 6.2948 },
   "SPORTWEG": { "lat": 51.9725, "lon": 6.3065 },
@@ -396,15 +391,13 @@ const streetData = {
   "STEENSTRAAT": { "lat": 51.9658, "lon": 6.2912 },
   "STEENPAD": { "lat": 51.9662, "lon": 6.2915 },
   "VELDPAD": { "lat": 51.9740, "lon": 6.3100 },
-  "WEIDESTRAAT": { "lat": 51.9735, "lon": 6.3095 },
   "WEIDEPAD": { "lat": 51.9740, "lon": 6.3102 },
+  "SEINHORSTSTRAAT": { "lat": 51.9749521, "lon": 6.3023245 },
   "ZANDPAD": { "lat": 51.9655, "lon": 6.2918 }
 }
 };
 
 let myNick, myPath, liveInt;
-
-// 1. تحديث الشوارع عند اختيار المدينة
 window.updateStreets = (city) => {
     const s = document.getElementById("street-select");
     s.innerHTML = '<option value="">-- KIES STRAAT --</option>';
@@ -419,10 +412,23 @@ window.updateStreets = (city) => {
 
 
 window.boot = () => {
-    myNick = document.getElementById("nick-input").value.trim().toUpperCase();
+    const nickInput = document.getElementById("nick-input");
+    let inputName = nickInput.value.trim().toUpperCase();
+    
+
     const city = document.getElementById("city-select").value;
     const street = document.getElementById("street-select").value;
-    if(!myNick || !city || !street) return alert("VUL ALLES IN!");
+
+
+    if(!inputName || !city || !street) return alert("VUL ALLES IN!");
+    let savedDID = localStorage.getItem("NL_LIVE_DID");
+    if (!savedDID) {
+        let randomNum = Math.floor(100 + Math.random() * 899); 
+        savedDID = `${inputName.substring(0, 3)}-${randomNum}`;
+        localStorage.setItem("NL_LIVE_DID", savedDID);
+    }
+
+    myNick = savedDID;
     localStorage.setItem("savedNick", myNick);
     navigator.geolocation.getCurrentPosition((p) => {
         const dist = calcDist(p.coords.latitude, p.coords.longitude, streetData[city][street].lat, streetData[city][street].lon);
@@ -440,8 +446,6 @@ window.boot = () => {
         startSystem();
     }, () => alert("GPS AAN ZETTEN!"), {enableHighAccuracy: true});
 };
-
-// 3. النظام الأساسي (الدردشة واللايف)
 function startSystem() {
     const msgRef = ref(db, `${myPath}/msgs`);
     const onlineRef = ref(db, `${myPath}/online/${myNick}`);
