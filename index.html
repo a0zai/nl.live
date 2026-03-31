@@ -326,6 +326,7 @@ const streetData = {
   "ROZENSTRAAT": { "lat": 51.9712, "lon": 6.3035 },
   "SCHOOLSTRAAT": { "lat": 51.9665, "lon": 6.2912 },
   "SCHOUWBURGPLEIN": { "lat": 51.9658, "lon": 6.2905 },
+  "SEINHORSTSTRAAT": { "lat": 51.9734, "lon": 6.3013 },
   "SIMONSPLEIN": { "lat": 51.9652, "lon": 6.2895 },
   "SINGELWEG": { "lat": 51.9688, "lon": 6.2948 },
   "SPORTWEG": { "lat": 51.9725, "lon": 6.3065 },
@@ -416,15 +417,13 @@ window.updateStreets = (city) => {
     }
 };
 
-// 2. تشغيل النظام والدخول
+
 window.boot = () => {
     myNick = document.getElementById("nick-input").value.trim().toUpperCase();
     const city = document.getElementById("city-select").value;
     const street = document.getElementById("street-select").value;
-
     if(!myNick || !city || !street) return alert("VUL ALLES IN!");
-    localStorage.setItem("mySavedNick", myNick);
-
+    localStorage.setItem("savedNick", myNick);
     navigator.geolocation.getCurrentPosition((p) => {
         const dist = calcDist(p.coords.latitude, p.coords.longitude, streetData[city][street].lat, streetData[city][street].lon);
         
@@ -579,6 +578,13 @@ function calcDist(lat1, lon1, lat2, lon2) {
     const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+window.onload = () => {
+    const savedName = localStorage.getItem("savedNick");
+    if (savedName) {
+        document.getElementById("nick-input").value = savedName;
+    }
+};
+
 </script>
 </body>
 </html>
