@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A0Z</title>
+    <style>
+        :root { --neon: #00ff41; --bg: #000; --red: #ff0000; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
+        .admin-header { border-bottom: 2px solid var(--neon); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .live-card { border: 1px solid #333; background: #0a0a0a; padding: 15px; border-radius: 8px; position: relative; transition: 0.3s; }
+        .live-card.pending { border-color: yellow; box-shadow: 0 0 10px rgba(255, 255, 0, 0.2); }
+        .live-card img { width: 100%; height: 200px; object-fit: cover; border: 1px solid #222; margin: 10px 0; background: #111; }
+        .info { font-size: 13px; color: #fff; margin-bottom: 5px; }
+        .status-tag { position: absolute; top: 10px; right: 10px; font-size: 10px; padding: 3px 7px; border-radius: 4px; font-weight: bold; }
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; padding: 10px; cursor: pointer; border: 1px solid var(--neon); background: transparent; color: var(--neon); font-family: inherit; font-weight: bold; }
+        button.ok { background: var(--neon); color: #000; }
+        button.kick { border-color: var(--red); color: var(--red); }
+        button:hover { opacity: 0.8; }
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .loading-spinner { border: 4px solid #111; border-top: 4px solid var(--neon); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <div class="loading-spinner"></div>
+        <p id="lock-msg" style="margin-top: 15px;">VERIFYING ADMIN IDENTITY...</p>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+        <div class="admin-header">
+            <div>
+                <h1 style="margin:0;">👀</h1>
+                <small id="admin-status">ADMIN: AUTHENTICATED</small>
+            </div>
+            <button onclick="location.reload()" style="width: auto; padding: 5px 15px;">REFRESH</button>
+        </div>
+        <div id="monitor-grid" class="grid"></div>
+    </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+const firebaseConfig = { 
+    apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA", 
+    projectId: "a0zai-56c3a", 
+    databaseURL: "https://a0zai-56c3a-default-rtdb.europe-west1.firebasedatabase.app" 
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const MY_UID = "YSUiBYUdbiQGS7RdQHtaF1VzVQD2";
+
+onAuthStateChanged(auth, (user) => {
+    if (user && user.uid === MY_UID) {
+        document.getElementById("lock-screen").style.display = "none";
+        document.getElementById("admin-content").style.display = "block";
+        startMonitoring();
+    } else {
+        document.getElementById("lock-msg").textContent = "ACCESS DENIED - REDIRECTING...";
+        document.getElementById("lock-msg").style.color = "red";
+        setTimeout(() => { window.location.href = "index.html"; }, 2500);
+    }
+});
+
+function startMonitoring() {
+    const allRef = ref(db, 'v6');
+    onValue(allRef, (snapshot) => {
+        const grid = document.getElementById("monitor-grid");
+        grid.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) return;
+        for (let city in data) {
+            for (let street in data[city]) {
+                const lives = data[city][street].lives;
+                if (lives) {
+                    Object.keys(lives).forEach(userId => {
+                        renderLiveCard(city, street, userId, lives[userId]);
+                    });
+                }
+            }
+        }
+    });
+}
+
+function renderLiveCard(city, street, userId, liveData) {
+    const grid = document.getElementById("monitor-grid");
+    const isApproved = liveData.approved === true;
+    const card = document.createElement("div");
+    card.className = `live-card ${!isApproved ? 'pending' : ''}`;
+    card.innerHTML = `
+        <span class="status-tag" style="background:${isApproved ? '#00ff41' : 'yellow'}; color:#000">
+            ${isApproved ? 'ONLINE' : 'WAITING OK'}
+        </span>
+        <div class="info">📍 ${street}</div>
+        <div class="info">👤 ${userId}</div>
+        <img src="${liveData.frame}">
+        <div class="btn-group">
+            ${!isApproved ? `<button class="ok" onclick="window.approve('${city}','${street}','${userId}')">APPROVE</button>` : ''}
+            <button class="kick" onclick="window.kick('${city}','${street}','${userId}')">TERMINATE</button>
+        </div>
+    `;
+    grid.appendChild(card);
+}
+
+window.approve = (c, s, u) => {
+    update(ref(db, `v6/${c}/${s}/lives/${u}`), { approved: true });
+};
+
+window.kick = (c, s, u) => {
+    if(confirm("DANGER: Stop this broadcast?")) {
+        remove(ref(db, `v6/${c}/${s}/lives/${u}`));
+    }
+};
+</script>
+</body>
+</html>
