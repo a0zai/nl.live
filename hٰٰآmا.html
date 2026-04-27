@@ -41,10 +41,11 @@
         </div>
         <div id="monitor-grid" class="grid"></div>
     </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
 const firebaseConfig = { 
     apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA", 
@@ -55,14 +56,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-
-signInAnonymously(auth);
+const MY_UID = "YSUiBYUdbiQGS7RdQHtaF1VzVQD2";
 
 onAuthStateChanged(auth, (user) => {
-    if (user) {
+    if (user && user.uid === MY_UID) {
         document.getElementById("lock-screen").style.display = "none";
         document.getElementById("admin-content").style.display = "block";
         startMonitoring();
+    } else {
+        document.getElementById("lock-msg").textContent = "ACCESS DENIED - REDIRECTING...";
+        document.getElementById("lock-msg").style.color = "red";
+        setTimeout(() => { window.location.href = "index.html"; }, 2500);
     }
 });
 
@@ -73,17 +77,16 @@ function startMonitoring() {
         grid.innerHTML = "";
         const data = snapshot.val();
         if (!data) return;
-
-        Object.keys(data).forEach(city => {
-            Object.keys(data[city]).forEach(street => {
+        for (let city in data) {
+            for (let street in data[city]) {
                 const lives = data[city][street].lives;
                 if (lives) {
                     Object.keys(lives).forEach(userId => {
                         renderLiveCard(city, street, userId, lives[userId]);
                     });
                 }
-            });
-        });
+            }
+        }
     });
 }
 
@@ -96,7 +99,7 @@ function renderLiveCard(city, street, userId, liveData) {
         <span class="status-tag" style="background:${isApproved ? '#00ff41' : 'yellow'}; color:#000">
             ${isApproved ? 'ONLINE' : 'WAITING OK'}
         </span>
-        <div class="info">📍 ${city} - ${street}</div>
+        <div class="info">📍 ${street}</div>
         <div class="info">👤 ${userId}</div>
         <img src="${liveData.frame}">
         <div class="btn-group">
