@@ -267,7 +267,7 @@
         <div id="remote-streams"></div>
 
         <div id="chat-box"></div>
-
+       <div id="typing-area" style="height: 20px; font-size: 11px; color: var(--primary); margin-left: 10px; font-style: italic;"></div>
         <div class="input-bar">
             <input id="msg-input" placeholder="Bericht..." maxlength="33" onkeydown="if(event.key==='Enter') window.sendMsg()">
             <button class="send-btn" onclick="window.sendMsg()">SND</button>
@@ -596,12 +596,33 @@ function startSystem() {
     set(onlineRef, true);
     onDisconnect(onlineRef).remove();
     onDisconnect(liveRef).remove();
-
     onValue(ref(db, `${myPath}/online`), (snap) => {
         const count = snap.exists() ? Object.keys(snap.val()).length : 0;
         const viewBtn = document.getElementById("view-count");
         if (viewBtn) viewBtn.textContent = `👥 ${count} VIEWERS`;
-        
+const msgInput = document.getElementById("msg-input");
+msgInput.addEventListener("input", () => {
+    set(ref(db, `${myPath}/typing/${myNick}`), true);
+    
+    clearTimeout(window.typingTimer);
+    window.typingTimer = setTimeout(() => {
+        remove(ref(db, `${myPath}/typing/${myNick}`));
+    }, 2000);
+});
+
+onValue(ref(db, `${myPath}/typing`), (snap) => {
+    const typingArea = document.getElementById("typing-area");
+    if (snap.exists()) {
+        const typers = Object.keys(snap.val()).filter(name => name !== myNick);
+        if (typers.length > 0) {
+            typingArea.textContent = `${typers.join(", ")} is aan het typen...`;
+        } else {
+            typingArea.textContent = "";
+        }
+    } else {
+        typingArea.textContent = "";
+    }
+});
         const namesArea = document.getElementById("names-area");
         if (namesArea && snap.exists()) {
             namesArea.innerHTML = Object.keys(snap.val()).join(", ");
