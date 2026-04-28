@@ -222,10 +222,19 @@
 
 <div class="container">
     <div style="text-align: right; margin-bottom: 15px;">
-    <button onclick="window.toggleInfo()" style="width: auto; padding: 8px 18px; border-radius: 50px; font-size: 11px; background: rgba(255,255,255,0.1); display: inline-flex; flex-direction: row; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.2);">
-        <span>ℹ️</span> APP INFO
-    </button>
-</div>
+        <button onclick="window.toggleInfo()" style="width: auto; padding: 8px 18px; border-radius: 50px; font-size: 11px; background: rgba(255,255,255,0.1); display: inline-flex; flex-direction: row; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.2);">
+            <span>ℹ️</span> APP INFO
+        </button>
+    </div>
+
+    <div id="login-ui" class="box">
+        <h2>NL LIVE</h2>
+        <input id="nick-input" placeholder="VUL JE NAAM IN (EX: NL-772)" maxlength="12">
+        <button onclick="window.boot()" style="background:var(--primary); color:#000; font-weight:bold; margin-top:10px;">
+            START RADAR SCAN 📡
+        </button>
+    </div>
+
     <div id="app-ui" style="display:none;">
         <button onclick="window.goBack()" style="padding:8px; font-size:11px; margin-bottom:10px; width:auto; border-color:#444;">⬅ TERUG</button>
         
@@ -246,17 +255,17 @@
             <div id="names-area" style="color:#ccc; margin-top:5px;"></div>
         </div>
 
-        <div id="live-container">
+        <div id="live-container" style="display:none;">
             <div class="live-tag">YOU ARE LIVE</div>
             <video id="v-preview" autoplay playsinline muted></video>
             <canvas id="v-canvas" style="display:none;"></canvas>
-            <button onclick="window.stopLive()" style="background:var(--red); color:white; border:none; padding:10px;">STOP BROADCAST</button>
+            <button onclick="window.stopLive()" style="background:var(--danger); color:white; border:none; padding:10px; width:100%; border-radius:0 0 20px 20px;">STOP BROADCAST</button>
         </div>
 
         <div id="remote-streams"></div>
 
         <div id="chat-box"></div>
-       <div id="typing-area" style="height: 20px; font-size: 11px; color: var(--primary); margin-left: 10px; font-style: italic;"></div>
+        <div id="typing-area" style="height: 20px; font-size: 11px; color: var(--primary); margin-left: 10px; font-style: italic;"></div>
         <div class="input-bar">
             <input id="msg-input" placeholder="Bericht..." maxlength="33" onkeydown="if(event.key==='Enter') window.sendMsg()">
             <button class="send-btn" onclick="window.sendMsg()">SND</button>
@@ -544,53 +553,43 @@ window.updateStreets = (city) => {
 window.boot = () => {
     const nickInput = document.getElementById("nick-input");
     let inputName = nickInput.value.trim().toUpperCase();
-    if (!inputName) return alert("VUL UW NAAM IN!");
-    let savedDID = localStorage.getItem("NL_LIVE_DID");
-    if (!savedDID) {
-        let randomNum = Math.floor(100 + Math.random() * 899);
-        savedDID = `${inputName.substring(0, 3)}-${randomNum}`;
-        localStorage.setItem("NL_LIVE_DID", savedDID);
-    }
+    if (!inputName) return alert("VUL JE D-ID IN!");
+
+    let savedDID = localStorage.getItem("NL_LIVE_DID") || 
+                   `${inputName.substring(0, 3)}-${Math.floor(100 + Math.random() * 899)}`;
+    localStorage.setItem("NL_LIVE_DID", savedDID);
     myNick = savedDID;
-    localStorage.setItem("savedNick", myNick);
-
     navigator.geolocation.getCurrentPosition((p) => {
-        const userLat = p.coords.latitude;
-        const userLon = p.coords.longitude;
+        const uLat = p.coords.latitude;
+        const uLon = p.coords.longitude;
 
-        let targetCity = null;
-        let targetStreet = null;
-        let closestDist = 309; 
+        let foundCity = null;
+        let foundStreet = null;
+        let minD = 309; 
 
+        // الرادار بيفحص كل الشوارع
         for (const city in streetData) {
             for (const street in streetData[city]) {
-                const coords = streetData[city][street];
-                const dist = calcDist(userLat, userLon, coords.lat, coords.lon);
-                
-                if (dist <= closestDist) {
-                    closestDist = dist;
-                    targetCity = city;
-                    targetStreet = street;
+                const d = calcDist(uLat, uLon, streetData[city][street].lat, streetData[city][street].lon);
+                if (d <= minD) {
+                    minD = d;
+                    foundCity = city;
+                    foundStreet = street;
                 }
             }
         }
 
-        if (targetCity && targetStreet) {
-            myPath = `v6/${targetCity}/${targetStreet}`;
-            
+        if (foundStreet) {
+            myPath = `v6/${foundCity}/${foundStreet}`;
             document.getElementById("login-ui").style.display = "none";
             document.getElementById("app-ui").style.display = "block";
-            document.getElementById("zone-txt").textContent = targetStreet;
-            document.getElementById("dist-txt").textContent = `RADAR: ${Math.round(closestDist)}m`;
-            
+            document.getElementById("zone-txt").textContent = foundStreet;
+            document.getElementById("dist-txt").textContent = `RADAR: ${Math.round(minD)}m`;
             startSystem(); 
         } else {
-            alert("GEEN TOEGANG: (Max 309m).");
+            alert("GEEN TOEGANG: Je bent niet in de buurt.");
         }
-        
-    }, (err) => {
-        alert("GPS AAN ZETTEN AUB!.");
-    }, { enableHighAccuracy: true });
+    }, () => alert("GPS ERROR!"), { enableHighAccuracy: true });
 };
 
 function startSystem() {
