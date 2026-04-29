@@ -215,6 +215,7 @@
     </div>
 </div>
 
+
 <script type="module"> 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getDatabase, ref, push, onChildAdded, onValue, onDisconnect, set, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
@@ -541,6 +542,7 @@ function startSystem() {
     const liveRef = ref(db, `${myPath}/lives/${uid}`);
     const typingRef = ref(db, `${myPath}/typing/${myNick}`);
 
+    // Online Status
     set(onlineRef, { n: myNick, t: Date.now() });
     onDisconnect(onlineRef).remove();
 
@@ -551,16 +553,19 @@ function startSystem() {
         document.getElementById("names-area").innerHTML = Object.values(data).map(u => u.n).join(", ");
     });
 
-    document.getElementById("msg-input").addEventListener("input", () => {
-        set(typingRef, true);
-        clearTimeout(window.typingTimer);
-        window.typingTimer = setTimeout(() => remove(typingRef), 2000);
-    });
+    // Chat logic
+    window.sendMsg = () => {
+        const i = document.getElementById("msg-input");
+        if (i.value.trim()) {
+            push(msgRef, { n: myNick, m: i.value, t: Date.now() });
+            i.value = "";
+            remove(typingRef);
+        }
+    };
 
-    onValue(ref(db, `${myPath}/typing`), (snap) => {
-        const typers = snap.exists() ? Object.keys(snap.val()).filter(n => n !== myNick) : [];
-        document.getElementById("typing-area").textContent = typers.length > 0 ? `${typers.join(", ")} is aan het typen...` : "";
-    });
+    window.sendSOS = () => {
+        push(msgRef, { n: "🚨 SOS", m: `${myNick} HEEFT HULP NODIG!`, t: Date.now() });
+    };
 
     onChildAdded(msgRef, s => {
         const d = s.val();
@@ -572,20 +577,19 @@ function startSystem() {
         box.scrollTop = box.scrollHeight;
     });
 
-    window.sendMsg = () => {
-        const i = document.getElementById("msg-input");
-        if (i.value.trim()) {
-            push(msgRef, { n: myNick, m: i.value, t: Date.now() });
-            i.value = "";
-            remove(typingRef);
-        }
-    };
-}
+    // Typing Status
+    document.getElementById("msg-input").addEventListener("input", () => {
+        set(typingRef, true);
+        clearTimeout(window.typingTimer);
+        window.typingTimer = setTimeout(() => remove(typingRef), 2000);
+    });
 
-    window.sendSOS = () => {
-        push(msgRef, { n: "🚨 SOS", m: `${myNick} HEEFT HULP NODIG!`, t: Date.now() });
-    };
+    onValue(ref(db, `${myPath}/typing`), (snap) => {
+        const typers = snap.exists() ? Object.keys(snap.val()).filter(n => n !== myNick) : [];
+        document.getElementById("typing-area").textContent = typers.length > 0 ? `${typers.join(", ")} is aan het typen...` : "";
+    });
 
+    // Live Broadcast
     window.startLive = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
@@ -597,7 +601,7 @@ function startSystem() {
             liveInt = setInterval(() => {
                 canvas.width = 300; canvas.height = 225;
                 ctx.drawImage(document.getElementById("v-preview"), 0, 0, canvas.width, canvas.height);
-                set(liveRef, { frame: canvas.toDataURL('image/jpeg', 0.4), t: Date.now(), approved: true });
+                set(liveRef, { frame: canvas.toDataURL('image/jpeg', 0.4), t: Date.now(), n: myNick });
             }, 500);
         } catch (e) { alert("Camera error!"); }
     };
@@ -610,32 +614,38 @@ function startSystem() {
         remove(liveRef);
     };
 
+    // View other lives
     onValue(ref(db, `${myPath}/lives`), s => {
         const container = document.getElementById("remote-streams");
         const allLives = s.val() || {};
+        
+        // Remove inactive streams
         Array.from(container.children).forEach(c => {
-            if(!allLives[c.id.replace('pc-', '')]) c.remove();
+            const userId = c.id.replace('pc-', '');
+            if(!allLives[userId]) c.remove();
         });
 
-        Object.keys(allLives).forEach(user => {
-            if(user === myNick) return;
-            let img = document.getElementById("pi-" + user);
+        // Add or update streams
+        Object.keys(allLives).forEach(userId => {
+            if(userId === uid) return; // Don't show own stream here
+            let img = document.getElementById("pi-" + userId);
             if(!img) {
                 const div = document.createElement("div");
-                div.id = "pc-" + user;
+                div.id = "pc-" + userId;
                 div.className = "viewer-box";
-                div.innerHTML = `<div class="live-tag" style="position:relative; top:0; left:0; display:inline-block; margin-bottom:5px;">LIVE: ${user}</div>`;
+                div.innerHTML = `<div class="live-tag" style="position:relative; top:0; left:0; display:inline-block; margin-bottom:5px;">LIVE: ${allLives[userId].n}</div>`;
                 img = document.createElement("img");
-                img.id = "pi-" + user;
+                img.id = "pi-" + userId;
                 img.style.width = "100%"; img.style.borderRadius = "15px";
                 div.appendChild(img);
                 container.appendChild(div);
             }
-            img.src = allLives[user].frame;
+            img.src = allLives[userId].frame;
         });
     });
 }
 
+// Global UI Helpers
 window.showViewers = () => {
     const el = document.getElementById("viewers-list");
     el.style.display = el.style.display === "none" ? "block" : "none";
