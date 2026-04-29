@@ -3,48 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A0Z</title>
+    <title>O</title>
     <style>
-        :root { --neon: #00ff41; --bg: #000; --red: #ff0000; }
+        :root { --neon: #00ff41; --bg: #000; --red: #ff4d4d; --glass: #0a0a0a; }
         body { background: var(--bg); color: var(--neon); font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
+        
         .admin-header { border-bottom: 2px solid var(--neon); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .live-card { border: 1px solid #333; background: #0a0a0a; padding: 15px; border-radius: 8px; position: relative; transition: 0.3s; }
-        .live-card.pending { border-color: yellow; box-shadow: 0 0 10px rgba(255, 255, 0, 0.2); }
-        .live-card img { width: 100%; height: 200px; object-fit: cover; border: 1px solid #222; margin: 10px 0; background: #111; }
-        .info { font-size: 13px; color: #fff; margin-bottom: 5px; }
-        .status-tag { position: absolute; top: 10px; right: 10px; font-size: 10px; padding: 3px 7px; border-radius: 4px; font-weight: bold; }
-        .btn-group { display: flex; gap: 10px; }
-        button { flex: 1; padding: 10px; cursor: pointer; border: 1px solid var(--neon); background: transparent; color: var(--neon); font-family: inherit; font-weight: bold; }
-        button.ok { background: var(--neon); color: #000; }
-        button.kick { border-color: var(--red); color: var(--red); }
-        button:hover { opacity: 0.8; }
+        
+        .section-title { background: var(--neon); color: #000; padding: 5px 15px; display: inline-block; font-weight: bold; margin-bottom: 15px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        
+        .live-card { border: 1px solid #333; background: var(--glass); padding: 15px; border-radius: 12px; position: relative; }
+        .live-card img { width: 100%; height: 180px; object-fit: cover; border: 1px solid #222; margin: 10px 0; background: #111; border-radius: 8px; }
+        .chat-monitor { background: var(--glass); border: 1px solid #222; border-radius: 12px; height: 400px; overflow-y: auto; padding: 15px; }
+        .chat-msg { border-bottom: 1px solid #1a1a1a; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .chat-msg b { color: var(--neon); font-size: 12px; }
+        .chat-msg span { color: #ccc; font-size: 13px; margin-left: 10px; flex-grow: 1; }
+        
+        .btn-kick { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 4px 8px; cursor: pointer; font-size: 10px; border-radius: 4px; }
+        .btn-kick:hover { background: var(--red); color: #fff; }
+        
+        button.main-btn { padding: 10px 20px; cursor: pointer; border: 1px solid var(--neon); background: var(--neon); color: #000; font-weight: bold; }
+        
         #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .loading-spinner { border: 4px solid #111; border-top: 4px solid var(--neon); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="lock-screen">
-        <div class="loading-spinner"></div>
-        <p id="lock-msg" style="margin-top: 15px;">VERIFYING ADMIN IDENTITY...</p>
+        <div style="border: 4px solid #111; border-top: 4px solid var(--neon); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+        <p id="lock-msg" style="margin-top: 15px;">AUTHENTICATING ADMIN...</p>
     </div>
 
     <div id="admin-content" style="display:none;">
         <div class="admin-header">
-            <div>
-                <h1 style="margin:0;">👀</h1>
-                <small id="admin-status">ADMIN: AUTHENTICATED</small>
-            </div>
-            <button onclick="location.reload()" style="width: auto; padding: 5px 15px;">REFRESH</button>
+            <h1>A0Z SYSTEM CONTROL</h1>
+            <button class="main-btn" onclick="location.reload()">REFRESH DATA</button>
         </div>
+
+        <div class="section-title">LIVE STREAMS MONITOR</div>
         <div id="monitor-grid" class="grid"></div>
+
+        <div class="section-title">GLOBAL CHAT MONITOR</div>
+        <div id="chat-monitor" class="chat-monitor"></div>
     </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+import { getDatabase, ref, onValue, remove, update, onChildAdded } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
 const firebaseConfig = { 
@@ -64,9 +71,8 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById("admin-content").style.display = "block";
         startMonitoring();
     } else {
-        document.getElementById("lock-msg").textContent = "ACCESS DENIED - REDIRECTING...";
-        document.getElementById("lock-msg").style.color = "red";
-        setTimeout(() => { window.location.href = "index.html"; }, 2500);
+        document.getElementById("lock-msg").textContent = "ACCESS DENIED";
+        setTimeout(() => { window.location.href = "index.html"; }, 2000);
     }
 });
 
@@ -74,51 +80,60 @@ function startMonitoring() {
     const allRef = ref(db, 'v6');
     onValue(allRef, (snapshot) => {
         const grid = document.getElementById("monitor-grid");
+        const chatBox = document.getElementById("chat-monitor");
         grid.innerHTML = "";
+        chatBox.innerHTML = ""; 
+        
         const data = snapshot.val();
         if (!data) return;
+
         for (let city in data) {
             for (let street in data[city]) {
                 const lives = data[city][street].lives;
                 if (lives) {
-                    Object.keys(lives).forEach(userId => {
-                        renderLiveCard(city, street, userId, lives[userId]);
-                    });
+                    Object.keys(lives).forEach(uid => renderLive(city, street, uid, lives[uid]));
+                }
+
+                const msgs = data[city][street].msgs;
+                if (msgs) {
+                    Object.keys(msgs).forEach(msgId => renderMsg(city, street, msgId, msgs[msgId]));
                 }
             }
         }
     });
 }
 
-function renderLiveCard(city, street, userId, liveData) {
+function renderLive(c, s, u, d) {
     const grid = document.getElementById("monitor-grid");
-    const isApproved = liveData.approved === true;
     const card = document.createElement("div");
-    card.className = `live-card ${!isApproved ? 'pending' : ''}`;
+    card.className = "live-card";
     card.innerHTML = `
-        <span class="status-tag" style="background:${isApproved ? '#00ff41' : 'yellow'}; color:#000">
-            ${isApproved ? 'ONLINE' : 'WAITING OK'}
-        </span>
-        <div class="info">📍 ${street}</div>
-        <div class="info">👤 ${userId}</div>
-        <img src="${liveData.frame}">
-        <div class="btn-group">
-            ${!isApproved ? `<button class="ok" onclick="window.approve('${city}','${street}','${userId}')">APPROVE</button>` : ''}
-            <button class="kick" onclick="window.kick('${city}','${street}','${userId}')">TERMINATE</button>
-        </div>
+        <div style="font-size:12px; color:yellow;">📍 ${s}</div>
+        <img src="${d.frame}">
+        <button class="btn-kick" style="width:100%" onclick="window.terminateLive('${c}','${s}','${u}')">TERMINATE STREAM</button>
     `;
     grid.appendChild(card);
 }
 
-window.approve = (c, s, u) => {
-    update(ref(db, `v6/${c}/${s}/lives/${u}`), { approved: true });
+function renderMsg(c, s, mid, m) {
+    const box = document.getElementById("chat-monitor");
+    const div = document.createElement("div");
+    div.className = "chat-msg";
+    div.innerHTML = `
+        <div><b>${m.n}:</b> <span>${m.m}</span> <small style="color:#555; font-size:9px;">(${s})</small></div>
+        <button class="btn-kick" onclick="window.deleteMsg('${c}','${s}','${mid}')">DELETE</button>
+    `;
+    box.appendChild(div);
+}
+
+window.terminateLive = (c, s, u) => {
+    if(confirm("قطع البث؟")) remove(ref(db, `v6/${c}/${s}/lives/${u}`));
 };
 
-window.kick = (c, s, u) => {
-    if(confirm("DANGER: Stop this broadcast?")) {
-        remove(ref(db, `v6/${c}/${s}/lives/${u}`));
-    }
+window.deleteMsg = (c, s, mid) => {
+    remove(ref(db, `v6/${c}/${s}/msgs/${mid}`));
 };
 </script>
+<style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
 </body>
 </html>
