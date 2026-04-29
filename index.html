@@ -275,7 +275,15 @@
 <script type="module"> 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
 import { getDatabase, ref, push, onChildAdded, onValue, onDisconnect, set, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
-
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+const auth = getAuth(app);
+signInAnonymously(auth)
+  .then(() => {
+    console.log("Anonymous login success");
+  })
+  .catch((error) => {
+    console.log(error);
+  });
 const firebaseConfig = { 
     apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA", 
     projectId: "a0zai-56c3a", 
@@ -566,8 +574,6 @@ window.boot = () => {
         let foundCity = null;
         let foundStreet = null;
         let minD = 309; 
-
-        // الرادار بيفحص كل الشوارع
         for (const city in streetData) {
             for (const street in streetData[city]) {
                 const d = calcDist(uLat, uLon, streetData[city][street].lat, streetData[city][street].lon);
@@ -593,14 +599,11 @@ window.boot = () => {
 };
 
 function startSystem() {
+    const uid = auth.currentUser.uid;
+
     const msgRef = ref(db, `${myPath}/msgs`);
-    const onlineRef = ref(db, `${myPath}/online/${myNick}`);
-    const liveRef = ref(db, `${myPath}/lives/${myNick}`);
-    set(onlineRef, true);
-    onDisconnect(onlineRef).remove();
-    onDisconnect(liveRef).remove();
-    onValue(ref(db, `${myPath}/online`), (snap) => {
-        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+    const onlineRef = ref(db, `${myPath}/online/${uid}`);
+    const liveRef = ref(db, `${myPath}/lives/${uid}`);        const count = snap.exists() ? Object.keys(snap.val()).length : 0;
         const viewBtn = document.getElementById("view-count");
         if (viewBtn) viewBtn.textContent = `👥 ${count} VIEWERS`;
 const msgInput = document.getElementById("msg-input");
