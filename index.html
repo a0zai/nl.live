@@ -114,13 +114,48 @@
         .auth-card { width: 100%; max-width: 320px; text-align: center; }
         .auth-card h1 { font-size: 2rem; margin-bottom: 20px; color: white; }
         .auth-card input { width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+.glitch-in {
+    animation: glitch-fade 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes glitch-fade {
+    0% {
+        opacity: 0;
+        transform: scale(1.1) skewX(10deg);
+        filter: brightness(2) blur(10px);
+    }
+    30% {
+        opacity: 0.8;
+        transform: scale(0.98) skewX(-5deg);
+        filter: brightness(1.2) blur(0px);
+    }
+    60% {
+        opacity: 0.5;
+        transform: skewX(20deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) skewX(0deg);
+        filter: brightness(1);
+    }
+}
+
+.shake-lite {
+    animation: shake 0.2s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
     </style>
 </head>
 <body>
-
-    <div id="auth-screen">
+    <div id="auth-screen" class="glitch-in">
         <div class="auth-card">
-            <h1>SYSTEM ACCESS</h1>
+            <h1>HELLO WORLD</h1>
             <input id="email" type="email" placeholder="Email Address">
             <input id="pass" type="password" placeholder="Password">
             <input id="nick" type="text" placeholder="Callsign (ALPHA-1)">
@@ -128,32 +163,26 @@
             <p onclick="window.access('reg')" style="font-size:11px; color:#666; margin-top:15px; cursor:pointer;">Initialize New Account</p>
         </div>
     </div>
-
     <div id="map"></div>
-
     <div class="floating-ui" id="main-ui" style="display:none;">
         <div class="glass-box">
             <div class="status-header">
                 <div class="indicator"><div class="dot-blink"></div> <span id="street-name">SCANNING SECTOR...</span></div>
                 <div style="font-size: 9px; color: #666;" id="coords-display">0.00, 0.00</div>
             </div>
-
             <div id="chat-container"></div>
-
             <div class="input-group">
                 <input type="text" id="msg-input" placeholder="Secure comms...">
                 <button class="btn-send" onclick="window.sendMsg()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                 </button>
             </div>
-            
             <div class="action-grid">
                 <button class="sos-btn" onclick="window.sos()">MAYDAY</button>
                 <button class="re-btn" onclick="window.reCenter()">RE-CENTER</button>
             </div>
         </div>
     </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getDatabase, ref, set, push, onChildAdded, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
@@ -302,15 +331,24 @@
         { name: "ZUIDERSTRAAT", lat: 51.9655, lon: 6.2925 }
     ];
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            myUID = user.uid;
-            myNick = user.displayName || "UNIT-X";
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-ui').style.display = 'flex';
-            initRadar();
-        }
-    });
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        myUID = user.uid;
+        myNick = user.displayName || "UNIT-X";
+        document.getElementById('auth-screen').style.display = 'none';
+        const mainUI = document.getElementById('main-ui');
+        mainUI.style.display = 'flex';
+        mainUI.classList.add('glitch-in');
+        initRadar();
+        document.body.style.transition = "none";
+        document.body.style.backgroundColor = "var(--neon)";
+        setTimeout(() => {
+            document.body.style.transition = "background 0.5s ease";
+            document.body.style.backgroundColor = "var(--bg-deep)";
+        }, 60);
+    }
+});
+
 
     function initRadar() {
         if (map) return;
