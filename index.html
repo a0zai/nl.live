@@ -131,6 +131,18 @@
             box-shadow: 0 0 15px var(--neon);
         }
 
+.tactical-label {
+    background: rgba(0, 20, 0, 0.7) !important;
+    border: 1px solid #00ffa3 !important;
+    color: #00ffa3 !important;
+    font-family: 'Courier New', monospace;
+    font-size: 11px !important;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
+}
+
     </style>
 </head>
 <body>
@@ -178,7 +190,6 @@
     import { getDatabase, ref, set, push, onChildAdded, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
-    // Configuration
     const firebaseConfig = { 
         apiKey: "AIzaSyA7Pu0DJOWmdoDYUUVP1J9aqhxh4f3wyfA", 
         projectId: "a0zai-56c3a", 
@@ -449,7 +460,7 @@
     onAuthStateChanged(auth, (user) => {
         if (user) {
             myUID = user.uid;
-            myNick = user.displayName || "UNIT-7";
+            myNick = user.displayName || "UNIT-X";
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-ui').style.display = 'flex';
             initRadar();
@@ -457,8 +468,7 @@
     });
 
     function initRadar() {
-        // Dark Mode Map Theme (CartoDB Dark Matter)
-        map = L.map('map', { zoomControl: false, attributionControl: false }).setView([52.1326, 5.2913], 13);
+        map = L.map('map', { zoomControl: false, attributionControl: false }).setView([51.965, 6.290], 15);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
         navigator.geolocation.watchPosition(p => {
@@ -468,72 +478,77 @@
 
             if (!myMarker) {
                 myMarker = L.circleMarker(currentPos, { radius: 8, color: '#fff', fillColor: '#00ffa3', fillOpacity: 1, weight: 3 }).addTo(map);
-                map.flyTo(currentPos, 15);
+                map.flyTo(currentPos, 16);
             } else {
                 myMarker.setLatLng(currentPos);
             }
 
-            // Smart Sector Detection
             checkSector(latitude, longitude);
-
-            // Sync with Global Radar
             set(ref(db, `radar/units/${myUID}`), { n: myNick, lat: latitude, lon: longitude, t: Date.now() });
             onDisconnect(ref(db, `radar/units/${myUID}`)).remove();
         }, null, { enableHighAccuracy: true });
 
-        // Listen for other units
-        onValue(ref(db, `radar/units`), snap => {
-            const units = snap.val() || {};
-            Object.keys(otherMarkers).forEach(id => { if(!units[id]) { map.removeLayer(otherMarkers[id]); delete otherMarkers[id]; } });
-            
-            for(let id in units) {
-                if(id === myUID) continue;
-                const {lat, lon, n} = units[id];
-                if(otherMarkers[id]) {
-                    otherMarkers[id].setLatLng([lat, lon]);
-                } else {
-                    otherMarkers[id] = L.circleMarker([lat, lon], { radius: 6, color: '#00ffa3', weight: 1, fillOpacity: 0.5 })
-                        .addTo(map).bindTooltip(n, { permanent: true, className: 'tactical-label' });
-                }
-            }
-        });
+onValue(ref(db, `radar/units`), snap => {
+    const units = snap.val() || {};
+    Object.keys(otherMarkers).forEach(id => { 
+        if(!units[id]) { map.removeLayer(otherMarkers[id]); delete otherMarkers[id]; } 
+    });
 
-        // Live Comms
+    for(let id in units) {
+        if(id === myUID) continue;
+        const {lat, lon, n} = units[id];
+        
+        const dist = L.latLng(currentPos).distanceTo([lat, lon]); 
+        const distLabel = dist > 1000 ? (dist/1000).toFixed(1) + " km" : Math.round(dist) + " m";
+        
+        if(otherMarkers[id]) {
+            otherMarkers[id].setLatLng([lat, lon]);
+            otherMarkers[id].getTooltip().setContent(`${n} [${distLabel}]`);
+        } else {
+            otherMarkers[id] = L.circleMarker([lat, lon], { radius: 6, color: '#00ffa3', weight: 1, fillOpacity: 0.5 })
+                .addTo(map).bindTooltip(`${n} [${distLabel}]`, { permanent: true, className: 'tactical-label', direction: 'top' });
+        }
+    }
+});
+
         onChildAdded(ref(db, `radar/comms`), s => {
             const data = s.val();
-            const div = document.createElement('div');
-            div.className = 'message';
-            div.innerHTML = `<b>${data.n}</b> ${data.m}`;
             const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            const isSOS = data.m.includes("EMERGENCY") || data.n.includes("🚨");
+            div.className = 'message';
+            if(isSOS) div.style.borderLeft = "3px solid var(--danger)";
+            div.innerHTML = `<b style="${isSOS ? 'color:var(--danger)' : ''}">${data.n}</b> ${data.m}`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         });
     }
 
     function checkSector(lat, lon) {
-        let found = sectors.find(s => {
-            const d = L.latLng(lat, lon).distanceTo([s.lat, s.lon]);
-            return d <= 309;
-        });
-
+        let found = sectors.find(s => L.latLng(lat, lon).distanceTo([s.lat, s.lon]) <= 300);
+        const display = document.getElementById('street-name');
         if (found) {
+            if (!inZone && navigator.vibrate) navigator.vibrate(100);
             inZone = true;
-            document.getElementById('street-name').innerText = `SECTOR: ${found.name}`;
-            document.getElementById('street-name').style.color = 'var(--neon)';
+            display.innerText = `SECTOR: ${found.name}`;
+            display.style.color = 'var(--neon)';
         } else {
             inZone = false;
-            document.getElementById('street-name').innerText = `OUTSIDE SECURE ZONE`;
-            document.getElementById('street-name').style.color = 'var(--danger)';
+            display.innerText = `OUTSIDE SECURE ZONE`;
+            display.style.color = 'var(--danger)';
         }
     }
 
     window.sendMsg = () => {
         const input = document.getElementById('msg-input');
-        if(!inZone) return alert("SIGNAL LOST: You must be within a secure sector to transmit.");
-        if(input.value.trim()) {
-            push(ref(db, `radar/comms`), { n: myNick, m: input.value, t: Date.now() });
-            input.value = '';
-        }
+        if(!input.value.trim()) return;
+        push(ref(db, `radar/comms`), { n: myNick, m: input.value, t: Date.now() });
+        input.value = '';
+    };
+
+    window.sos = () => {
+        push(ref(db, `radar/comms`), { n: "🚨 " + myNick, m: "EMERGENCY: UNIT REQUIRES ASSISTANCE!", t: Date.now() });
+        if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
     };
 
     window.access = async (mode) => {
@@ -545,14 +560,25 @@
                 const res = await createUserWithEmailAndPassword(auth, e, p);
                 await updateProfile(res.user, { displayName: n });
                 location.reload();
-            } else {
-                await signInWithEmailAndPassword(auth, e, p);
-            }
+            } else { await signInWithEmailAndPassword(auth, e, p); }
         } catch(err) { alert(err.message); }
     };
 
     window.reCenter = () => map.flyTo(currentPos, 16);
-    window.sos = () => push(ref(db, `radar/comms`), { n: "🚨 " + myNick, m: "EMERGENCY: UNIT REQUIRES IMMEDIATE ASSISTANCE!", t: Date.now() });
+    document.getElementById('msg-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') window.sendMsg(); });
+window.addEventListener('offline', () => {
+    const status = document.getElementById('street-name');
+    status.innerText = "⚠️ SIGNAL LOST - GPS ONLY";
+    status.style.color = "#ff9800";
+    if(navigator.vibrate) navigator.vibrate(500); 
+});
+
+window.addEventListener('online', () => {
+    const status = document.getElementById('street-name');
+    status.innerText = "SIGNAL RESTORED";
+    status.style.color = "var(--neon)";
+    setTimeout(() => checkSector(currentPos[0], currentPos[1]), 2000);
+});
 
 </script>
 </body>
