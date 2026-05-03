@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NL LIVE TACTICAL V7</title>
+    <title>NL TACTICAL V8 .. . RADAR ZONES</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -24,17 +24,10 @@
 
         #map { 
             position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; 
-            filter: brightness(0.6) contrast(1.2) saturate(0.5);
+            filter: brightness(0.6) contrast(1.2) saturate(0.8);
         }
 
-        /* Tactical Glitch Animation */
-        .glitch-in { animation: glitch-fade 0.8s ease-out; }
-        @keyframes glitch-fade {
-            0% { opacity: 0; filter: brightness(3) blur(10px); transform: scale(1.1); }
-            100% { opacity: 1; filter: brightness(1) blur(0px); transform: scale(1); }
-        }
-
-        /* الحاوية الرئيسية - ترتيب عمودي */
+        /* Tactical UI */
         .floating-ui {
             position: absolute; bottom: 20px; left: 50%;
             transform: translateX(-50%);
@@ -49,78 +42,62 @@
             border-radius: 18px;
             padding: 15px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            display: flex; flex-direction: column; gap: 10px;
         }
 
-        /* الهيدر: القطاع والإحداثيات */
         .status-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 10px;
         }
 
         .sector-info { color: var(--neon); font-weight: bold; font-size: 13px; letter-spacing: 1px; }
         .coords { font-size: 10px; color: #555; }
 
-        /* منطقة الرسائل */
         #chat-container {
-            height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
-            scrollbar-width: none;
+            height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+            scrollbar-width: none; margin-bottom: 10px;
         }
 
         .message {
-            background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px;
-            border-left: 3px solid var(--neon); font-size: 12px; line-height: 1.4;
+            background: rgba(255,255,255,0.03); padding: 8px; border-radius: 10px;
+            border-left: 3px solid var(--neon); font-size: 11px;
         }
-
         .message.mayday { border-left-color: var(--danger); background: rgba(255, 62, 62, 0.05); }
-        .message b { color: var(--neon); display: block; margin-bottom: 2px; font-size: 10px; }
 
-        /* أزرار التحكم المنفصلة */
-        .controls { display: flex; flex-direction: column; gap: 10px; }
-
-        .input-row { display: flex; gap: 8px; }
+        .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
         input {
             flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; padding: 12px; color: white; font-size: 14px; outline: none;
+            border-radius: 10px; padding: 10px; color: white; font-size: 13px;
         }
 
-        .btn-send {
-            background: var(--neon); border: none; width: 50px; border-radius: 12px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-
+        .btn-send { background: var(--neon); border: none; width: 45px; border-radius: 10px; cursor: pointer; }
         .btn-sos {
             background: rgba(255, 62, 62, 0.1); border: 1px solid var(--danger);
-            color: var(--danger); padding: 14px; border-radius: 12px;
-            font-weight: bold; font-size: 12px; letter-spacing: 2px; cursor: pointer;
-            transition: 0.3s;
+            color: var(--danger); padding: 10px; border-radius: 10px;
+            font-weight: bold; font-size: 10px; width: 100%; cursor: pointer;
         }
-        .btn-sos:active { background: var(--danger); color: white; }
 
-        /* التسميات على الخريطة */
         .tactical-label {
-            background: rgba(0,0,0,0.8) !important; border: 1px solid var(--neon) !important;
-            color: var(--neon) !important; font-size: 10px !important; padding: 2px 6px; border-radius: 4px;
+            background: rgba(0,0,0,0.9) !important; border: 1px solid var(--neon) !important;
+            color: var(--neon) !important; font-size: 9px !important; text-transform: uppercase;
         }
 
         #auth-screen {
             position: fixed; inset: 0; background: var(--bg-deep); z-index: 1000;
-            display: flex; align-items: center; justify-content: center; padding: 30px;
+            display: flex; align-items: center; justify-content: center;
         }
-        .auth-card { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; }
-        .auth-card h1 { color: var(--neon); letter-spacing: 5px; text-align: center; margin-bottom: 10px; }
+        .auth-card { width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 12px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen" class="glitch-in">
+    <div id="auth-screen">
         <div class="auth-card">
-            <h1>UNIT LOGIN</h1>
+            <h2 style="color:var(--neon); text-align:center; letter-spacing:3px;">SYSTEM LOGIN</h2>
             <input id="email" type="email" placeholder="Email">
             <input id="pass" type="password" placeholder="Password">
-            <input id="nick" type="text" placeholder="Callsign (e.g. ALPHA-1)">
-            <button onclick="window.access('login')" style="background:var(--neon); color:black; padding:15px; border-radius:12px; font-weight:bold; border:none;">CONNECT LINK</button>
-            <span onclick="window.access('reg')" style="color:#444; font-size:11px; text-align:center; cursor:pointer;">New Unit? Register Here</span>
+            <input id="nick" type="text" placeholder="Callsign">
+            <button onclick="window.access('login')" style="background:var(--neon); padding:12px; border-radius:10px; border:none; font-weight:bold;">CONNECT</button>
+            <button onclick="window.access('reg')" style="background:transparent; color:#555; border:none; font-size:10px;">REGISTER NEW UNIT</button>
         </div>
     </div>
 
@@ -129,21 +106,15 @@
     <div class="floating-ui" id="main-ui">
         <div class="glass-box">
             <div class="status-header">
-                <div class="sector-info">● <span id="street-name">SCANNING...</span></div>
+                <div class="sector-info">● <span id="street-name">SEARCHING ZONES...</span></div>
                 <div class="coords" id="coords-display">0.000, 0.000</div>
             </div>
-            
             <div id="chat-container"></div>
-
-            <div class="controls">
-                <div class="input-row">
-                    <input type="text" id="msg-input" placeholder="Transmit data...">
-                    <button class="btn-send" onclick="window.sendMsg()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="black"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                    </button>
-                </div>
-                <button class="btn-sos" onclick="window.sos()">SOS / MAYDAY</button>
+            <div class="input-row">
+                <input type="text" id="msg-input" placeholder="Secure comms...">
+                <button class="btn-send" onclick="window.sendMsg()">➤</button>
             </div>
+            <button class="btn-sos" onclick="window.sos()">REPORT INCIDENT (SOS)</button>
         </div>
     </div>
 
@@ -161,12 +132,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    const BASE_PATH = 'v7/doetinchem';
+    const BASE_PATH = 'v8/doetinchem';
 
     let map, myMarker, myUID, myNick;
     let otherMarkers = {};
-    let currentPos = [51.965, 6.290];
-const sectors = [
+    let zoneVisuals = []; 
+    const sectors = [
     { name: "2E LOOLAAN", lat: 51.9732, lon: 6.2845 }, { name: "ABDIJLAAN", lat: 51.9705, lon: 6.2978 },
     { name: "ACACIALAAN", lat: 51.9741, lon: 6.3012 }, { name: "ACHTERHOF", lat: 51.9660, lon: 6.2910 },
     { name: "ACHTERSTRAAT", lat: 51.9650, lon: 6.2900 }, { name: "ADELAARSTRAAT", lat: 51.9682, lon: 6.3015 },
@@ -293,74 +264,87 @@ const sectors = [
     { name: "ZUIDERLAAN", lat: 51.9595, lon: 6.2752 }, { name: "ZUIDERSTRAAT", lat: 51.9655, lon: 6.2925 }
 ];
 
-
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, user => {
         if (user) {
             myUID = user.uid;
             myNick = user.displayName || "UNIT";
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-ui').style.display = 'flex';
-            document.getElementById('main-ui').classList.add('glitch-in');
             initRadar();
         }
     });
 
     function initRadar() {
         if (map) return;
-        map = L.map('map', { zoomControl: false, attributionControl: false }).setView(currentPos, 16);
+        map = L.map('map', { zoomControl: false, attributionControl: false }).setView([51.965, 6.290], 15);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+        // إنشاء مناطق الرادار (دوائر 300 متر)
+        sectors.forEach(s => {
+            const circle = L.circle([s.lat, s.lon], {
+                radius: 300,
+                color: 'var(--neon)',
+                fillColor: 'var(--neon)',
+                fillOpacity: 0.1,
+                weight: 1
+            }).addTo(map);
+            
+            circle.bindTooltip(s.name, { sticky: true, className: 'tactical-label' });
+            zoneVisuals.push({ name: s.name, circle: circle, lat: s.lat, lon: s.lon });
+        });
 
         navigator.geolocation.watchPosition(p => {
             const { latitude, longitude } = p.coords;
-            currentPos = [latitude, longitude];
+            const pos = [latitude, longitude];
             document.getElementById('coords-display').innerText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
 
             if (!myMarker) {
-                myMarker = L.circleMarker(currentPos, { radius: 9, color: '#fff', fillColor: '#00ffa3', fillOpacity: 1, weight: 4 }).addTo(map);
-                map.panTo(currentPos);
-            } else { myMarker.setLatLng(currentPos); }
+                myMarker = L.circleMarker(pos, { radius: 8, color: '#fff', fillColor: 'var(--neon)', fillOpacity: 1 }).addTo(map);
+                map.panTo(pos);
+            } else { myMarker.setLatLng(pos); }
 
-            updateSector(latitude, longitude);
+            checkZones(latitude, longitude);
 
-            set(ref(db, `${BASE_PATH}/lives/${myUID}`), {
-                n: myNick, lat: latitude, lon: longitude, t: Date.now()
-            });
-            onDisconnect(ref(db, `${BASE_PATH}/lives/${myUID}`)).remove();
+            set(ref(db, `${BASE_PATH}/lives/${myUID}`), { n: myNick, lat: latitude, lon: longitude, t: Date.now() });
         });
 
-        // استلام المواقع
         onValue(ref(db, `${BASE_PATH}/lives`), snap => {
             const units = snap.val() || {};
             for(let id in units) {
                 if(id === myUID) continue;
-                const {lat, lon, n} = units[id];
-                if(otherMarkers[id]) { otherMarkers[id].setLatLng([lat, lon]); }
+                if(otherMarkers[id]) { otherMarkers[id].setLatLng([units[id].lat, units[id].lon]); }
                 else {
-                    otherMarkers[id] = L.circleMarker([lat, lon], { radius: 6, color: '#00ffa3' })
-                        .addTo(map).bindTooltip(n, { permanent: true, className: 'tactical-label', direction: 'top' });
+                    otherMarkers[id] = L.circleMarker([units[id].lat, units[id].lon], { radius: 5, color: 'var(--neon)' })
+                        .addTo(map).bindTooltip(units[id].n, { permanent: true, className: 'tactical-label' });
                 }
             }
         });
 
-        // استلام الرسائل
         onChildAdded(ref(db, `${BASE_PATH}/msgs`), s => {
-            const data = s.val();
+            const d = s.val();
             const container = document.getElementById('chat-container');
             const div = document.createElement('div');
-            div.className = `message ${data.m.includes('MAYDAY') ? 'mayday' : ''}`;
-            div.innerHTML = `<b>${data.n}</b>${data.m}`;
+            div.className = `message ${d.m.includes('MAYDAY') ? 'mayday' : ''}`;
+            div.innerHTML = `<b>${d.n}</b>${d.m}`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         });
     }
 
-    function updateSector(lat, lon) {
-        let nearest = sectors.reduce((prev, curr) => {
-            let distPrev = L.latLng(lat, lon).distanceTo([prev.lat, prev.lon]);
-            let distCurr = L.latLng(lat, lon).distanceTo([curr.lat, curr.lon]);
-            return (distCurr < distPrev) ? curr : prev;
+    function checkZones(lat, lon) {
+        let userPos = L.latLng(lat, lon);
+        let activeName = "OUT OF RANGE";
+        
+        zoneVisuals.forEach(zone => {
+            let dist = userPos.distanceTo([zone.lat, zone.lon]);
+            if(dist <= 300) {
+                zone.circle.setStyle({ fillOpacity: 0.4, color: 'var(--danger)', weight: 2 });
+                activeName = zone.name;
+            } else {
+                zone.circle.setStyle({ fillOpacity: 0.1, color: 'var(--neon)', weight: 1 });
+            }
         });
-        document.getElementById('street-name').innerText = nearest.name;
+        document.getElementById('street-name').innerText = activeName;
     }
 
     window.sendMsg = () => {
@@ -371,10 +355,10 @@ const sectors = [
     };
 
     window.sos = () => {
-        push(ref(db, `${BASE_PATH}/msgs`), { n: "🚨 " + myNick, m: "!!! MAYDAY - IMMEDIATE ASSISTANCE !!!" });
+        push(ref(db, `${BASE_PATH}/msgs`), { n: "🚨 " + myNick, m: "!!! MAYDAY - WITHIN RANGE !!!" });
     };
 
-    window.access = async (mode) => {
+    window.access = async mode => {
         const e = document.getElementById('email').value;
         const p = document.getElementById('pass').value;
         const n = document.getElementById('nick').value;
